@@ -1,0 +1,50 @@
+{
+  "name": "deal-prep-level-2",
+  "version": "1.0.0",
+  "description": "Production sales-enablement system for generating Deal Preparation Briefs with n8n orchestration",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test:unit": "node --experimental-vm-modules node_modules/jest/bin/jest.js tests/unit",
+    "test:integration": "node --experimental-vm-modules node_modules/jest/bin/jest.js tests/integration",
+    "lint": "eslint src --ext .ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "sales-enablement",
+    "deal-prep",
+    "n8n",
+    "aws",
+    "firecrawl"
+  ],
+  "author": "MyRecruiter",
+  "license": "UNLICENSED",
+  "private": true,
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "@aws-sdk/client-s3": "^3.709.0",
+    "@aws-sdk/lib-storage": "^3.709.0",
+    "axios": "^1.7.9",
+    "date-fns": "^4.1.0",
+    "nanoid": "^5.0.9",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.14",
+    "@types/node": "^22.10.5",
+    "@typescript-eslint/eslint-plugin": "^8.19.1",
+    "@typescript-eslint/parser": "^8.19.1",
+    "eslint": "^9.18.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.2.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.3"
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "_comment": "Complete inbound trigger input for Community Partners Foundation - all optional fields populated",
+  "meta": {
+    "trigger_source": "inbound",
+    "submitted_at": "2026-01-17T14:32:00Z",
+    "run_id": "run_a1b2c3d4e5f6789012345678901234567890abcdef",
+    "requested_meeting_at": "2026-01-20T15:00:00Z",
+    "timezone": "America/New_York"
+  },
+  "organization": {
+    "name": "Community Partners Foundation",
+    "website": "https://www.communitypartnersfoundation.org",
+    "domain": "communitypartnersfoundation.org"
+  },
+  "contact": {
+    "full_name": "Sarah Mitchell",
+    "first_name": "Sarah",
+    "last_name": "Mitchell",
+    "title": "Director of Volunteer Services",
+    "email": "sarah.mitchell@communitypartnersfoundation.org",
+    "phone": "+1-555-234-5678",
+    "linkedin_url": "https://www.linkedin.com/in/sarah-mitchell-volunteer-director"
+  },
+  "notes": {
+    "comments": "Sarah reached out after seeing our booth at the Nonprofit Tech Summit. She mentioned they are struggling to manage their 200+ volunteers and wants to explore how AI can help streamline volunteer coordination and reduce staff workload.",
+    "intent_topic": "Volunteer management automation",
+    "source_context": "Nonprofit Tech Summit 2026 - Booth conversation"
+  },
+  "routing": {
+    "crm_target": "hubspot:company:12345678",
+    "email_to": "sales@myrecruiter.ai",
+    "email_cc": ["founders@myrecruiter.ai", "partnerships@myrecruiter.ai"],
+    "motion_workspace": "workspace_nonprofit_deals"
+  }
+}

@@ -1,0 +1,140 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://myrecruiter.ai/schemas/deal-prep/input-schema.json",
+  "title": "Deal Preparation Input Schema",
+  "description": "Canonical input contract for Level 2 Deal Preparation system (Implementation Spec §4.1)",
+  "type": "object",
+  "required": ["meta", "organization", "contact", "notes", "routing"],
+  "properties": {
+    "meta": {
+      "type": "object",
+      "description": "Metadata about the run and trigger",
+      "required": ["trigger_source", "submitted_at", "run_id"],
+      "properties": {
+        "trigger_source": {
+          "type": "string",
+          "enum": ["inbound", "outbound"],
+          "description": "Source of the trigger"
+        },
+        "submitted_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO-8601 timestamp when the request was submitted"
+        },
+        "run_id": {
+          "type": "string",
+          "description": "Unique identifier for this run"
+        },
+        "requested_meeting_at": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "ISO-8601 timestamp of the requested meeting, null if unknown"
+        },
+        "timezone": {
+          "type": ["string", "null"],
+          "description": "IANA timezone string, null if not provided"
+        }
+      }
+    },
+    "organization": {
+      "type": "object",
+      "description": "Organization information (at least name or website required)",
+      "properties": {
+        "name": {
+          "type": ["string", "null"],
+          "description": "Organization name"
+        },
+        "website": {
+          "type": ["string", "null"],
+          "description": "Organization website URL"
+        },
+        "domain": {
+          "type": ["string", "null"],
+          "description": "Parsed domain from website (derived field)"
+        }
+      }
+    },
+    "contact": {
+      "type": "object",
+      "description": "Contact person information",
+      "properties": {
+        "full_name": {
+          "type": ["string", "null"],
+          "description": "Full name of the contact"
+        },
+        "first_name": {
+          "type": ["string", "null"],
+          "description": "First name of the contact"
+        },
+        "last_name": {
+          "type": ["string", "null"],
+          "description": "Last name of the contact"
+        },
+        "title": {
+          "type": ["string", "null"],
+          "description": "Job title of the contact"
+        },
+        "email": {
+          "type": ["string", "null"],
+          "format": "email",
+          "description": "Email address of the contact"
+        },
+        "phone": {
+          "type": ["string", "null"],
+          "description": "Phone number of the contact"
+        },
+        "linkedin_url": {
+          "type": ["string", "null"],
+          "format": "uri",
+          "description": "LinkedIn profile URL"
+        }
+      }
+    },
+    "notes": {
+      "type": "object",
+      "description": "Additional context and notes",
+      "properties": {
+        "comments": {
+          "type": ["string", "null"],
+          "description": "Free-form comments or notes"
+        },
+        "intent_topic": {
+          "type": ["string", "null"],
+          "description": "Topic or intent expressed by the contact"
+        },
+        "source_context": {
+          "type": ["string", "null"],
+          "description": "Context about the source of the request"
+        }
+      }
+    },
+    "routing": {
+      "type": "object",
+      "description": "Routing configuration for delivery",
+      "properties": {
+        "crm_target": {
+          "type": ["string", "null"],
+          "description": "Target CRM system or identifier"
+        },
+        "email_to": {
+          "type": ["string", "null"],
+          "format": "email",
+          "description": "Primary email recipient"
+        },
+        "email_cc": {
+          "type": "array",
+          "description": "CC email recipients",
+          "items": {
+            "type": "string",
+            "format": "email"
+          },
+          "default": []
+        },
+        "motion_workspace": {
+          "type": ["string", "null"],
+          "description": "Motion workspace identifier"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://myrecruiter.ai/schemas/deal-prep/scrape-output-schema.json",
+  "title": "Website Scrape Output Schema",
+  "description": "Canonical website extraction output contract (Implementation Spec §6.3)",
+  "type": "object",
+  "required": ["scrape_meta", "pages", "errors"],
+  "properties": {
+    "scrape_meta": {
+      "type": "object",
+      "description": "Metadata about the scraping operation",
+      "required": ["started_at", "completed_at", "source_domain", "tool", "pages_fetched"],
+      "properties": {
+        "started_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO-8601 timestamp when scraping started"
+        },
+        "completed_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO-8601 timestamp when scraping completed"
+        },
+        "source_domain": {
+          "type": "string",
+          "description": "The domain that was scraped"
+        },
+        "tool": {
+          "type": "string",
+          "description": "Tool used for scraping (e.g., Firecrawl)"
+        },
+        "pages_fetched": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Number of pages successfully fetched"
+        }
+      }
+    },
+    "pages": {
+      "type": "array",
+      "description": "Extracted pages from the website",
+      "items": {
+        "type": "object",
+        "required": ["url", "final_url", "page_type", "extracted_markdown", "ctas", "people_mentions"],
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Original URL requested"
+          },
+          "final_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Final URL after redirects"
+          },
+          "page_type": {
+            "type": "string",
+            "enum": ["home", "about", "programs", "volunteer", "donate", "faq", "staff", "contact", "other"],
+            "description": "Classified page type"
+          },
+          "title": {
+            "type": ["string", "null"],
+            "description": "Page title, null if not available"
+          },
+          "extracted_markdown": {
+            "type": "string",
+            "description": "Extracted content in Markdown format with boilerplate removed"
+          },
+          "ctas": {
+            "type": "array",
+            "description": "Call-to-action buttons or links found on the page",
+            "items": {
+              "type": "string"
+            }
+          },
+          "people_mentions": {
+            "type": "array",
+            "description": "People mentioned on the page",
+            "items": {
+              "type": "object",
+              "required": ["name"],
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "Person's name"
+                },
+                "role": {
+                  "type": ["string", "null"],
+                  "description": "Person's role or title, null if not mentioned"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "errors": {
+      "type": "array",
+      "description": "Errors encountered during scraping",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    }
+  }
+}

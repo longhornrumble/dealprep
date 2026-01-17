@@ -1,0 +1,93 @@
+{
+  "runId": "20260117_143022_abc123xyz",
+  "prospect": {
+    "companyName": "Acme Corporation",
+    "companyOverview": "Acme Corporation is a mid-sized staffing and recruitment firm specializing in technology placements across North America. They manage approximately 500 active job openings and work with 200+ corporate clients.",
+    "industry": "Staffing & Recruiting",
+    "size": "150-200 employees",
+    "keyProducts": [
+      "Technology recruitment services",
+      "Contract staffing solutions",
+      "Executive search",
+      "Applicant tracking system (internal tool)"
+    ]
+  },
+  "contact": {
+    "name": "Jane Smith",
+    "title": "VP of Operations",
+    "background": "Jane has 12 years of experience in recruitment operations and technology. She previously worked at a larger staffing firm before joining Acme 3 years ago to help modernize their operations.",
+    "relevantExperience": [
+      "Led digital transformation initiatives at previous company",
+      "Implemented ATS and CRM systems",
+      "Strong advocate for automation and AI in recruitment"
+    ]
+  },
+  "insights": {
+    "painPoints": [
+      "Manual candidate screening consuming 40% of recruiter time",
+      "Inconsistent candidate experience across different recruiters",
+      "Difficulty tracking candidate engagement and communication history",
+      "High administrative burden preventing recruiters from focusing on relationships",
+      "Growing competition from larger firms with better technology"
+    ],
+    "opportunities": [
+      "Strong interest in AI-powered automation to improve efficiency",
+      "Existing technical infrastructure makes integration easier",
+      "Executive buy-in for modernization initiatives",
+      "Recent funding round provides budget for technology investments",
+      "Pain points align perfectly with MyRecruiter's core value proposition"
+    ],
+    "competitivePosition": "Acme is a established regional player competing against both larger national firms with better technology and smaller boutique firms with deeper specialization. They're at an inflection point where technology investment could be a key differentiator.",
+    "decisionMakingProcess": "Jane has significant influence as VP of Operations, but final budget approval likely requires CEO sign-off. Decision timeline appears to be 30-60 days based on their stated urgency and budget cycle timing."
+  },
+  "recommendations": {
+    "talkingPoints": [
+      "Reference the successful referral and how that customer improved recruiter efficiency by 35%",
+      "Emphasize AI-powered candidate screening and how it reduces manual work by 40%+",
+      "Highlight conversational AI for candidate engagement and improved experience consistency",
+      "Position MyRecruiter as a competitive advantage against larger firms",
+      "Discuss integration with their existing ATS and smooth implementation process"
+    ],
+    "questionsToAsk": [
+      "What percentage of your recruiters' time is spent on manual screening vs. relationship building?",
+      "How do you currently measure candidate experience and engagement?",
+      "What's been the biggest challenge in previous technology implementations?",
+      "What would success look like 6 months after implementing an AI solution?",
+      "Who else should be involved in evaluating this solution?",
+      "What's your current budget cycle and timeline for making this decision?"
+    ],
+    "objectionHandling": [
+      "Cost concerns: Focus on ROI through time savings and increased placements, offer pilot program to demonstrate value",
+      "Integration complexity: Highlight seamless API integrations and dedicated implementation support",
+      "Recruiter adoption: Share case studies of successful change management and training programs",
+      "AI accuracy concerns: Explain human-in-the-loop design and customizable screening criteria",
+      "Data security: Provide SOC 2 compliance documentation and security architecture overview"
+    ],
+    "nextSteps": [
+      "Schedule 30-minute demo focused on candidate screening automation",
+      "Share case study from similar-sized staffing firm (150-200 employees)",
+      "Provide ROI calculator customized to their recruiter headcount",
+      "Arrange technical discovery call with their IT team if needed",
+      "Send proposal within 3 business days of demo",
+      "Offer 30-day pilot program with 2-3 recruiters"
+    ]
+  },
+  "sources": [
+    {
+      "type": "website",
+      "url": "https://www.acmecorp.com",
+      "description": "Company website - services, about page, and careers section"
+    },
+    {
+      "type": "linkedin",
+      "url": "https://www.linkedin.com/in/janesmith",
+      "description": "Jane Smith's LinkedIn profile - background and experience"
+    },
+    {
+      "type": "manual",
+      "description": "Input context from sales rep - pain points and referral information"
+    }
+  ],
+  "generatedAt": "2026-01-17T14:35:18.000Z",
+  "confidence": "high"
+}

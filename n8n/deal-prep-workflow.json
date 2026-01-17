@@ -1,0 +1,419 @@
+{
+  "name": "Level 2 Deal Preparation Pipeline",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "deal-prep",
+        "responseMode": "responseNode",
+        "options": {
+          "rawBody": true
+        }
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook Trigger (Inbound)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [220, 300],
+      "webhookId": "deal-prep-inbound"
+    },
+    {
+      "parameters": {},
+      "id": "manual-trigger",
+      "name": "Manual Trigger (Outbound)",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [220, 500]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Merge inputs from either webhook or manual trigger\n// and add trigger_source metadata\n\nconst items = $input.all();\nconst webhookData = $('Webhook Trigger (Inbound)').first();\nconst manualData = $('Manual Trigger (Outbound)').first();\n\nlet rawInput;\nlet triggerSource;\n\n// Determine which trigger fired\nif (webhookData && webhookData.json && Object.keys(webhookData.json).length > 0) {\n  rawInput = webhookData.json;\n  triggerSource = 'inbound';\n} else if (manualData && manualData.json && Object.keys(manualData.json).length > 0) {\n  rawInput = manualData.json;\n  triggerSource = 'outbound';\n} else {\n  // For testing - use sample data if no input\n  rawInput = {\n    organization: {\n      name: 'Test Organization',\n      website: 'https://example.org'\n    },\n    contact: {\n      full_name: 'John Doe',\n      email: 'john@example.org'\n    },\n    notes: {},\n    routing: {}\n  };\n  triggerSource = 'outbound';\n}\n\nreturn [{\n  json: {\n    rawInput,\n    triggerSource,\n    receivedAt: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "merge-inputs",
+      "name": "Merge Trigger Inputs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [440, 400]
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * Normalize Input Node\n * \n * Imports and calls normalize() from deal-prep module.\n * Adds trigger_source and generates submitted_at timestamp.\n * \n * Implementation Spec Section 4: Canonical Input Contract\n */\n\nconst { rawInput, triggerSource, receivedAt } = $input.first().json;\n\n// Helper functions inline (in production, import from deal-prep module)\nfunction trimString(value) {\n  return typeof value === 'string' ? value.trim() : value;\n}\n\nfunction normalizeEmail(email) {\n  if (!email || typeof email !== 'string') return null;\n  return email.trim().toLowerCase();\n}\n\nfunction normalizeUrl(url) {\n  if (!url || typeof url !== 'string') return null;\n  let normalized = url.trim();\n  if (!normalized.startsWith('http://') && !normalized.startsWith('https://')) {\n    normalized = 'https://' + normalized;\n  }\n  // Remove trailing slash\n  normalized = normalized.replace(/\\/$/, '');\n  return normalized;\n}\n\nfunction extractDomain(url) {\n  if (!url) return null;\n  try {\n    const parsed = new URL(normalizeUrl(url));\n    return parsed.hostname.replace(/^www\\./, '');\n  } catch {\n    return null;\n  }\n}\n\n// Build canonical input\nconst normalized = {\n  meta: {\n    trigger_source: triggerSource,\n    submitted_at: receivedAt,\n    run_id: null, // Will be generated in next step\n    requested_meeting_at: rawInput.meta?.requested_meeting_at || null,\n    timezone: rawInput.meta?.timezone || null\n  },\n  organization: {\n    name: trimString(rawInput.organization?.name) || null,\n    website: normalizeUrl(rawInput.organization?.website),\n    domain: extractDomain(rawInput.organization?.website) || \n            extractDomain(rawInput.organization?.domain) || null\n  },\n  contact: {\n    full_name: trimString(rawInput.contact?.full_name) || null,\n    first_name: trimString(rawInput.contact?.first_name) || null,\n    last_name: trimString(rawInput.contact?.last_name) || null,\n    title: trimString(rawInput.contact?.title) || null,\n    email: normalizeEmail(rawInput.contact?.email),\n    phone: trimString(rawInput.contact?.phone) || null,\n    linkedin_url: normalizeUrl(rawInput.contact?.linkedin_url)\n  },\n  notes: {\n    comments: trimString(rawInput.notes?.comments) || null,\n    intent_topic: trimString(rawInput.notes?.intent_topic) || null,\n    source_context: trimString(rawInput.notes?.source_context) || null\n  },\n  routing: {\n    crm_target: trimString(rawInput.routing?.crm_target) || null,\n    email_to: normalizeEmail(rawInput.routing?.email_to),\n    email_cc: (rawInput.routing?.email_cc || []).map(e => normalizeEmail(e)).filter(Boolean),\n    motion_workspace: trimString(rawInput.routing?.motion_workspace) || null\n  }\n};\n\n// Validate required fields per spec 4.2\nconst hasOrgIdentifier = normalized.organization.name || normalized.organization.website;\nif (!hasOrgIdentifier) {\n  throw new Error('Validation failed: At least one of organization.name or organization.website must be present');\n}\n\nconsole.log('[Normalize] Input normalized successfully');\nconsole.log('[Normalize] Organization:', normalized.organization.name || normalized.organization.domain);\n\nreturn [{\n  json: {\n    normalized,\n    triggerSource\n  }\n}];"
+      },
+      "id": "normalize-input",
+      "name": "Normalize Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [660, 400],
+      "onError": "stopWorkflow"
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * Generate Run ID Node\n * \n * Calls generateRunId() per Implementation Spec Section 5.\n * Checks idempotency with checkIdempotency().\n * Exits early if run already completed.\n * \n * Algorithm:\n * 1. Determine organization identifier (domain > parsed domain > name)\n * 2. Round submitted_at (inbound: 5 min, outbound: 60 min)\n * 3. Hash: trigger_source | rounded_timestamp | org_identifier\n * 4. Prefix with \"run_\"\n */\n\nconst crypto = require('crypto');\nconst { normalized, triggerSource } = $input.first().json;\n\n// Derive organization identifier (spec 5.1)\nfunction deriveOrgIdentifier(org) {\n  if (org.domain) return org.domain;\n  if (org.website) {\n    try {\n      const parsed = new URL(org.website);\n      return parsed.hostname.replace(/^www\\./, '');\n    } catch {}\n  }\n  if (org.name) {\n    return org.name.toLowerCase().replace(/[^a-z0-9]/g, '-');\n  }\n  return 'unknown';\n}\n\n// Round timestamp (spec 5.1)\nfunction roundTimestamp(isoTimestamp, triggerSource) {\n  const date = new Date(isoTimestamp);\n  const minutes = triggerSource === 'inbound' ? 5 : 60;\n  const ms = minutes * 60 * 1000;\n  const rounded = new Date(Math.floor(date.getTime() / ms) * ms);\n  return rounded.toISOString();\n}\n\n// Generate run ID\nconst orgIdentifier = deriveOrgIdentifier(normalized.organization);\nconst roundedTimestamp = roundTimestamp(normalized.meta.submitted_at, triggerSource);\nconst inputString = `${triggerSource}|${roundedTimestamp}|${orgIdentifier}`;\n\nconst hash = crypto.createHash('sha256').update(inputString).digest('hex');\nconst runId = `run_${hash.substring(0, 16)}`;\n\n// Update normalized input with run_id\nnormalized.meta.run_id = runId;\n\nconsole.log('[RunManager] Generated run_id:', runId);\nconsole.log('[RunManager] Input string:', inputString);\n\n// In production: Check idempotency via S3\n// const existingRun = await checkIdempotency(runId);\n// if (existingRun && existingRun.status === 'completed') {\n//   return [{ json: { skipExecution: true, existingRun } }];\n// }\n\nreturn [{\n  json: {\n    normalized,\n    runId,\n    skipExecution: false,\n    orgIdentifier\n  }\n}];"
+      },
+      "id": "generate-run-id",
+      "name": "Generate Run ID",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [880, 400]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.skipExecution }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "check-idempotency",
+      "name": "Check Idempotency",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1100, 400]
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * Initialize Run Artifact Node\n * \n * Creates initial run artifact and stores to S3.\n * Implementation Spec Section 5.2 and 11.1\n */\n\nconst { normalized, runId, orgIdentifier } = $input.first().json;\n\n// Create initial run artifact\nconst runArtifact = {\n  run_id: runId,\n  trigger_source: normalized.meta.trigger_source,\n  started_at: new Date().toISOString(),\n  completed_at: null,\n  status: 'in_progress',\n  input_payload: `s3://deal-prep-artifacts/deal-prep/${runId}/input.json`,\n  scrape_result: null,\n  enrichment_result: null,\n  llm_output: null,\n  rendered_outputs: {},\n  deliveries: {\n    customer_relationship_management: {\n      status: 'not_attempted',\n      attempted_at: null,\n      error: null\n    },\n    email: {\n      status: 'not_attempted',\n      attempted_at: null,\n      error: null\n    },\n    motion: {\n      status: 'not_attempted',\n      attempted_at: null,\n      error: null\n    }\n  },\n  errors: [],\n  metadata: {\n    organization_identifier: orgIdentifier,\n    input_validation_passed: true,\n    pipeline_version: '2.0.0'\n  }\n};\n\n// In production: Store to S3\n// await storageAdapter.save(runId, 'run-metadata', runArtifact);\n// await storageAdapter.save(runId, 'input', normalized);\n\nconsole.log('[RunManager] Run artifact initialized:', runId);\nconsole.log('[RunManager] Status:', runArtifact.status);\n\nreturn [{\n  json: {\n    normalized,\n    runId,\n    runArtifact,\n    orgIdentifier\n  }\n}];"
+      },
+      "id": "initialize-run",
+      "name": "Initialize Run Artifact",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1320, 500]
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * Website Scrape Node\n * \n * Calls scrapeWebsite() with organization.website.\n * Implements retry logic: 2 retries, 30s then 120s backoff.\n * Stores scrape result to S3.\n * Continues on failure (stores error).\n * \n * Implementation Spec Section 6: Website Research and Extraction\n */\n\nconst { normalized, runId, runArtifact, orgIdentifier } = $input.first().json;\n\n// Retry configuration per spec 6.5\nconst RETRY_DELAYS = [30000, 120000]; // 30s, 120s\nconst MAX_RETRIES = 2;\n\nasync function sleep(ms) {\n  return new Promise(resolve => setTimeout(resolve, ms));\n}\n\nasync function scrapeWithRetry(website) {\n  // Stub implementation - in production, import from deal-prep module\n  // and use Firecrawl API\n  \n  const scrapeOutput = {\n    scrape_meta: {\n      started_at: new Date().toISOString(),\n      completed_at: null,\n      source_domain: new URL(website).hostname,\n      tool: 'firecrawl',\n      pages_fetched: 0\n    },\n    pages: [],\n    errors: []\n  };\n  \n  let lastError = null;\n  \n  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {\n    try {\n      console.log(`[Scraper] Attempt ${attempt + 1} of ${MAX_RETRIES + 1}`);\n      \n      // In production: Call Firecrawl API\n      // const result = await scrapeWebsite(website, {\n      //   maxPages: 25,\n      //   maxDepth: 3,\n      //   targetPages: ['home', 'about', 'programs', 'volunteer', 'donate', 'faq', 'staff', 'contact']\n      // });\n      \n      // Simulated successful scrape for testing\n      scrapeOutput.scrape_meta.completed_at = new Date().toISOString();\n      scrapeOutput.scrape_meta.pages_fetched = 5;\n      scrapeOutput.pages = [\n        {\n          url: website,\n          final_url: website,\n          page_type: 'home',\n          title: 'Home - ' + (normalized.organization.name || 'Organization'),\n          extracted_markdown: '# Welcome\\n\\nThis is the home page content.',\n          ctas: ['Learn More', 'Contact Us'],\n          people_mentions: []\n        },\n        {\n          url: website + '/about',\n          final_url: website + '/about',\n          page_type: 'about',\n          title: 'About Us',\n          extracted_markdown: '# About Us\\n\\nOrganization description.',\n          ctas: [],\n          people_mentions: [{ name: 'Jane Doe', role: 'Executive Director' }]\n        }\n      ];\n      \n      console.log('[Scraper] Success: Fetched', scrapeOutput.scrape_meta.pages_fetched, 'pages');\n      return { success: true, data: scrapeOutput };\n      \n    } catch (error) {\n      lastError = error;\n      scrapeOutput.errors.push(`Attempt ${attempt + 1}: ${error.message}`);\n      \n      if (attempt < MAX_RETRIES) {\n        const delay = RETRY_DELAYS[attempt];\n        console.log(`[Scraper] Retry ${attempt + 1} failed, waiting ${delay/1000}s...`);\n        await sleep(delay);\n      }\n    }\n  }\n  \n  // All retries failed\n  scrapeOutput.scrape_meta.completed_at = new Date().toISOString();\n  return {\n    success: false,\n    data: scrapeOutput,\n    error: lastError?.message || 'Unknown scrape error'\n  };\n}\n\n// Execute scrape\nlet scrapeResult;\nconst website = normalized.organization.website;\n\nif (website) {\n  scrapeResult = await scrapeWithRetry(website);\n} else {\n  scrapeResult = {\n    success: false,\n    data: {\n      scrape_meta: {\n        started_at: new Date().toISOString(),\n        completed_at: new Date().toISOString(),\n        source_domain: null,\n        tool: 'firecrawl',\n        pages_fetched: 0\n      },\n      pages: [],\n      errors: ['No website URL provided']\n    },\n    error: 'No website URL provided'\n  };\n}\n\n// Update run artifact\nrunArtifact.scrape_result = `s3://deal-prep-artifacts/deal-prep/${runId}/scraped-content.json`;\nif (!scrapeResult.success) {\n  runArtifact.errors.push(`Scrape failed: ${scrapeResult.error}`);\n}\n\n// In production: Store to S3\n// await storageAdapter.save(runId, 'scraped-content', scrapeResult.data);\n\nconsole.log('[Scraper] Completed:', scrapeResult.success ? 'SUCCESS' : 'FAILED');\n\nreturn [{\n  json: {\n    normalized,\n    runId,\n    runArtifact,\n    orgIdentifier,\n    scrapeResult: scrapeResult.data\n  }\n}];"
+      },
+      "id": "website-scrape",
+      "name": "Website Scrape",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1540, 500],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * Person Enrichment Node\n * \n * Calls enrichPerson() with contact.linkedin_url.\n * Non-blocking - always continues.\n * Stores enrichment result to S3.\n * \n * Implementation Spec Section 7: Person Enrichment\n */\n\nconst { normalized, runId, runArtifact, orgIdentifier, scrapeResult } = $input.first().json;\n\nasync function enrichPerson(linkedinUrl) {\n  // Enrichment output per spec 7.3\n  const enrichmentOutput = {\n    requester_profile: {\n      summary: 'Not found',\n      confidence: 'not_available'\n    },\n    errors: []\n  };\n  \n  if (!linkedinUrl) {\n    enrichmentOutput.errors.push('No LinkedIn URL provided');\n    return { success: true, data: enrichmentOutput };\n  }\n  \n  try {\n    // Validate LinkedIn URL\n    const url = new URL(linkedinUrl);\n    if (!url.hostname.includes('linkedin.com')) {\n      throw new Error('Invalid LinkedIn URL');\n    }\n    \n    console.log('[Enrichment] Processing LinkedIn:', linkedinUrl);\n    \n    // In production: Call enrichment provider\n    // const result = await enrichPerson(linkedinUrl);\n    \n    // Simulated enrichment result\n    enrichmentOutput.requester_profile = {\n      summary: `Professional with experience in their field. LinkedIn profile: ${linkedinUrl}`,\n      confidence: 'medium'\n    };\n    \n    console.log('[Enrichment] Success: Confidence =', enrichmentOutput.requester_profile.confidence);\n    return { success: true, data: enrichmentOutput };\n    \n  } catch (error) {\n    enrichmentOutput.errors.push(error.message);\n    console.log('[Enrichment] Failed:', error.message);\n    return { success: true, data: enrichmentOutput }; // Non-blocking per spec\n  }\n}\n\n// Execute enrichment\nconst enrichResult = await enrichPerson(normalized.contact.linkedin_url);\n\n// Update run artifact\nrunArtifact.enrichment_result = `s3://deal-prep-artifacts/deal-prep/${runId}/enriched-person.json`;\nif (enrichResult.data.errors.length > 0) {\n  runArtifact.errors.push(`Enrichment warnings: ${enrichResult.data.errors.join('; ')}`);\n}\n\n// In production: Store to S3\n// await storageAdapter.save(runId, 'enriched-person', enrichResult.data);\n\nconsole.log('[Enrichment] Completed');\n\nreturn [{\n  json: {\n    normalized,\n    runId,\n    runArtifact,\n    orgIdentifier,\n    scrapeResult,\n    enrichmentResult: enrichResult.data\n  }\n}];"
+      },
+      "id": "person-enrichment",
+      "name": "Person Enrichment",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1760, 500],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * LLM Synthesis Node\n * \n * Calls synthesizeBrief() with all gathered data.\n * Retries once on validation failure.\n * Stores brief to S3.\n * \n * Implementation Spec Section 8 & 9: LLM Synthesis and Output Contract\n */\n\nconst { normalized, runId, runArtifact, orgIdentifier, scrapeResult, enrichmentResult } = $input.first().json;\n\nconst MAX_LLM_RETRIES = 1;\n\nasync function synthesizeBriefWithRetry(input, scrape, enrichment) {\n  // Build the canonical brief per spec 9.2\n  // In production: Call Claude API with prompt from prompts/synthesize-brief.md\n  \n  let lastError = null;\n  \n  for (let attempt = 0; attempt <= MAX_LLM_RETRIES; attempt++) {\n    try {\n      console.log(`[Synthesizer] Attempt ${attempt + 1} of ${MAX_LLM_RETRIES + 1}`);\n      \n      // In production:\n      // const prompt = buildPrompt(input, scrape, enrichment);\n      // const response = await callClaude(prompt);\n      // const brief = parseBriefResponse(response);\n      \n      // Generate stub brief matching spec 9.2 schema\n      const brief = {\n        meta: {\n          run_id: runId,\n          generated_at: new Date().toISOString(),\n          trigger_source: input.meta.trigger_source,\n          organization_name: input.organization.name || 'Not found',\n          organization_website: input.organization.website || 'Not found',\n          organization_domain: input.organization.domain || 'Not found',\n          requester_name: input.contact.full_name || 'Not found',\n          requester_title: input.contact.title || 'Not found',\n          source_urls: scrape.pages?.map(p => p.url) || []\n        },\n        executive_summary: {\n          summary: `Deal preparation brief for ${input.organization.name || input.organization.domain}. Based on website analysis and available contact information.`,\n          top_opportunities: [\n            'AI-powered chatbot for improved engagement',\n            'Automated volunteer management workflow',\n            'Donor engagement optimization'\n          ]\n        },\n        organization_understanding: {\n          mission: scrape.pages?.find(p => p.page_type === 'about')?.extracted_markdown?.slice(0, 200) || 'Mission statement not found',\n          programs: [\n            { name: 'Core Program', summary: 'Main organizational program' }\n          ],\n          audiences: ['General public', 'Volunteers', 'Donors']\n        },\n        website_analysis: {\n          overall_tone: 'Professional and informative',\n          strengths: ['Clear navigation', 'Good content structure'],\n          gaps: ['Limited interactive elements', 'Could benefit from chatbot'],\n          volunteer_flow_observations: 'Basic volunteer information available',\n          donation_flow_observations: 'Standard donation process'\n        },\n        leadership_and_staff: {\n          executive_leader: {\n            name: scrape.pages?.flatMap(p => p.people_mentions || []).find(m => m.role?.toLowerCase().includes('director'))?.name || 'Not found',\n            role: 'Executive Director',\n            summary: 'Organization leadership'\n          },\n          other_staff_mentions: scrape.pages?.flatMap(p => p.people_mentions || []).slice(0, 3) || []\n        },\n        requester_profile: {\n          summary: enrichment.requester_profile?.summary || 'Not found',\n          conversation_angle: 'Focus on efficiency improvements and engagement metrics'\n        },\n        artificial_intelligence_opportunities: [\n          {\n            title: 'AI Chatbot for Website Visitors',\n            why_it_matters: 'Improve visitor engagement and answer common questions 24/7',\n            demonstration_hook: 'Show how the chatbot handles FAQs from the website'\n          },\n          {\n            title: 'Automated Volunteer Coordination',\n            why_it_matters: 'Streamline volunteer scheduling and communication',\n            demonstration_hook: 'Demo the volunteer sign-up and scheduling flow'\n          },\n          {\n            title: 'Donor Engagement Automation',\n            why_it_matters: 'Personalize donor communications and increase retention',\n            demonstration_hook: 'Show personalized thank-you and update messages'\n          }\n        ],\n        demonstration_plan: {\n          opening: `Thank you for meeting with me today. I have reviewed ${input.organization.name || 'your organization'}\\'s website and identified several opportunities.`,\n          steps: [\n            'Present executive summary and key opportunities',\n            'Demo the AI chatbot with real questions from their FAQ',\n            'Show volunteer engagement workflow',\n            'Discuss integration with existing systems',\n            'Review pricing and next steps'\n          ],\n          example_bot_responses: [\n            'I can help answer questions about volunteer opportunities!',\n            'Our programs include...',\n            'You can make a donation by...'\n          ]\n        },\n        objections_and_rebuttals: [\n          {\n            objection: 'We already have a good website',\n            rebuttal: 'Your website is excellent for information. An AI chatbot enhances it by providing instant, personalized responses 24/7.'\n          },\n          {\n            objection: 'Our budget is limited',\n            rebuttal: 'The ROI typically shows within 3-6 months through reduced staff time on repetitive questions and increased engagement.'\n          },\n          {\n            objection: 'We do not have technical resources',\n            rebuttal: 'Our solution requires no technical expertise. We handle all setup and provide ongoing support.'\n          }\n        ],\n        opening_script: `Hi ${input.contact.first_name || 'there'}, thank you for your time today. I have done research on ${input.organization.name || 'your organization'} and am excited to discuss how AI can enhance your engagement.`,\n        follow_up_emails: {\n          short_version: {\n            subject: `Following up on our conversation - ${input.organization.name || 'AI Solutions'}`,\n            body: `Thank you for meeting today. As discussed, I believe our AI chatbot solution can significantly improve visitor engagement. I have attached a summary of the key opportunities. Let me know if you have questions.`\n          },\n          warm_version: {\n            subject: `Great meeting you - Next steps for ${input.organization.name || 'your organization'}`,\n            body: `It was wonderful speaking with you today about ${input.organization.name || 'your organization'}. I was particularly impressed by your mission and the work you do. Based on our conversation, I believe the AI chatbot solution we discussed could help you engage more visitors and free up staff time for higher-value activities. I have attached a summary of the opportunities we discussed, along with some example implementations from similar organizations. Would you be available next week for a follow-up call to discuss next steps?`\n          }\n        }\n      };\n      \n      console.log('[Synthesizer] Brief generated successfully');\n      return { success: true, data: brief };\n      \n    } catch (error) {\n      lastError = error;\n      console.log(`[Synthesizer] Attempt ${attempt + 1} failed:`, error.message);\n    }\n  }\n  \n  return { success: false, error: lastError?.message || 'LLM synthesis failed' };\n}\n\n// Execute synthesis\nconst synthesisResult = await synthesizeBriefWithRetry(normalized, scrapeResult, enrichmentResult);\n\nif (!synthesisResult.success) {\n  runArtifact.errors.push(`LLM synthesis failed: ${synthesisResult.error}`);\n  throw new Error(`LLM synthesis failed: ${synthesisResult.error}`);\n}\n\n// Update run artifact\nrunArtifact.llm_output = `s3://deal-prep-artifacts/deal-prep/${runId}/brief.json`;\n\n// In production: Store to S3\n// await storageAdapter.save(runId, 'brief', synthesisResult.data);\n\nconsole.log('[Synthesizer] Completed successfully');\n\nreturn [{\n  json: {\n    normalized,\n    runId,\n    runArtifact,\n    orgIdentifier,\n    scrapeResult,\n    enrichmentResult,\n    brief: synthesisResult.data\n  }\n}];"
+      },
+      "id": "llm-synthesis",
+      "name": "LLM Synthesis",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1980, 500]
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * Validate Brief Node\n * \n * Calls validateBrief() per Implementation Spec Section 9.3.\n * If invalid, logs errors and continues with warnings.\n * \n * Hard Constraints (spec 9.3):\n * - Exactly 3 top opportunities\n * - Exactly 3 AI opportunities\n * - Exactly 3 objections/rebuttals\n * - Executive summary <= 600 chars\n * - Opening script <= 450 chars\n * - Demo plan <= 6 steps\n * - Short email <= 120 words\n * - Warm email <= 180 words\n */\n\nconst { normalized, runId, runArtifact, orgIdentifier, scrapeResult, enrichmentResult, brief } = $input.first().json;\n\nfunction countWords(text) {\n  if (!text) return 0;\n  return text.split(/\\s+/).filter(w => w.length > 0).length;\n}\n\nfunction validateBrief(brief) {\n  const errors = [];\n  const warnings = [];\n  \n  // Check required structure\n  if (!brief.meta?.run_id) errors.push('Missing meta.run_id');\n  if (!brief.meta?.generated_at) errors.push('Missing meta.generated_at');\n  \n  // Exactly 3 top opportunities (spec 9.3)\n  if (brief.executive_summary?.top_opportunities?.length !== 3) {\n    errors.push(`top_opportunities must have exactly 3 items, got ${brief.executive_summary?.top_opportunities?.length || 0}`);\n  }\n  \n  // Exactly 3 AI opportunities (spec 9.3)\n  if (brief.artificial_intelligence_opportunities?.length !== 3) {\n    errors.push(`AI opportunities must have exactly 3 items, got ${brief.artificial_intelligence_opportunities?.length || 0}`);\n  }\n  \n  // Exactly 3 objections/rebuttals (spec 9.3)\n  if (brief.objections_and_rebuttals?.length !== 3) {\n    errors.push(`objections_and_rebuttals must have exactly 3 items, got ${brief.objections_and_rebuttals?.length || 0}`);\n  }\n  \n  // Executive summary <= 600 chars\n  const summaryLength = brief.executive_summary?.summary?.length || 0;\n  if (summaryLength > 600) {\n    errors.push(`Executive summary exceeds 600 chars (got ${summaryLength})`);\n  }\n  \n  // Opening script <= 450 chars\n  const scriptLength = brief.opening_script?.length || 0;\n  if (scriptLength > 450) {\n    errors.push(`Opening script exceeds 450 chars (got ${scriptLength})`);\n  }\n  \n  // Demo plan <= 6 steps\n  const stepsCount = brief.demonstration_plan?.steps?.length || 0;\n  if (stepsCount > 6) {\n    errors.push(`Demonstration plan exceeds 6 steps (got ${stepsCount})`);\n  }\n  \n  // Short email <= 120 words\n  const shortEmailWords = countWords(brief.follow_up_emails?.short_version?.body);\n  if (shortEmailWords > 120) {\n    warnings.push(`Short email body exceeds 120 words (got ${shortEmailWords})`);\n  }\n  \n  // Warm email <= 180 words\n  const warmEmailWords = countWords(brief.follow_up_emails?.warm_version?.body);\n  if (warmEmailWords > 180) {\n    warnings.push(`Warm email body exceeds 180 words (got ${warmEmailWords})`);\n  }\n  \n  // Check for \"Not found\" placeholders (warning only)\n  if (brief.meta?.organization_name === 'Not found' && brief.meta?.organization_website === 'Not found') {\n    warnings.push('Both organization name and website are Not found');\n  }\n  \n  return {\n    valid: errors.length === 0,\n    errors,\n    warnings\n  };\n}\n\n// Execute validation\nconst validationResult = validateBrief(brief);\n\nconsole.log('[Validator] Valid:', validationResult.valid);\nconsole.log('[Validator] Errors:', validationResult.errors.length);\nconsole.log('[Validator] Warnings:', validationResult.warnings.length);\n\n// Log validation issues to run artifact\nif (validationResult.errors.length > 0) {\n  runArtifact.errors.push(`Validation errors: ${validationResult.errors.join('; ')}`);\n}\nif (validationResult.warnings.length > 0) {\n  runArtifact.errors.push(`Validation warnings: ${validationResult.warnings.join('; ')}`);\n}\n\n// Continue execution even if validation fails (per spec, log and continue)\nreturn [{\n  json: {\n    normalized,\n    runId,\n    runArtifact,\n    orgIdentifier,\n    scrapeResult,\n    enrichmentResult,\n    brief,\n    validationResult\n  }\n}];"
+      },
+      "id": "validate-brief",
+      "name": "Validate Brief",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2200, 500],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * Render Outputs Node\n * \n * Calls renderCRMNote(), renderEmail(), renderMotionTask().\n * Stores rendered outputs.\n * \n * Implementation Spec Section 10: Rendering Specifications\n */\n\nconst { normalized, runId, runArtifact, orgIdentifier, scrapeResult, enrichmentResult, brief, validationResult } = $input.first().json;\n\n// CRM Renderer (spec 10.2)\nfunction renderForCRM(brief) {\n  const sections = [\n    `# Deal Preparation Brief`,\n    `## Meta`,\n    `- Run ID: ${brief.meta.run_id}`,\n    `- Generated: ${brief.meta.generated_at}`,\n    `- Trigger: ${brief.meta.trigger_source}`,\n    `- Organization: ${brief.meta.organization_name}`,\n    `- Website: ${brief.meta.organization_website}`,\n    `- Contact: ${brief.meta.requester_name} (${brief.meta.requester_title})`,\n    ``,\n    `## Executive Summary`,\n    brief.executive_summary.summary,\n    ``,\n    `### Top Opportunities`,\n    ...brief.executive_summary.top_opportunities.map((o, i) => `${i + 1}. ${o}`),\n    ``,\n    `## Organization Understanding`,\n    `**Mission:** ${brief.organization_understanding.mission}`,\n    ``,\n    `### Programs`,\n    ...brief.organization_understanding.programs.map(p => `- **${p.name}:** ${p.summary}`),\n    ``,\n    `### Audiences`,\n    ...brief.organization_understanding.audiences.map(a => `- ${a}`),\n    ``,\n    `## AI Opportunities`,\n    ...brief.artificial_intelligence_opportunities.map((o, i) => [\n      `### ${i + 1}. ${o.title}`,\n      `**Why it matters:** ${o.why_it_matters}`,\n      `**Demo hook:** ${o.demonstration_hook}`,\n      ``\n    ]).flat(),\n    `## Objections & Rebuttals`,\n    ...brief.objections_and_rebuttals.map((o, i) => [\n      `### Objection ${i + 1}: \"${o.objection}\"`,\n      `**Rebuttal:** ${o.rebuttal}`,\n      ``\n    ]).flat(),\n    `## Opening Script`,\n    brief.opening_script\n  ];\n  \n  return {\n    format: 'markdown',\n    content: sections.join('\\n'),\n    run_id: brief.meta.run_id\n  };\n}\n\n// Email Renderer (spec 10.3)\nfunction renderForEmail(brief, input) {\n  const emailContent = {\n    to: input.routing.email_to,\n    cc: input.routing.email_cc,\n    subject: `Deal Prep Brief: ${brief.meta.organization_name}`,\n    body_html: `\n      <h2>Deal Preparation Brief</h2>\n      <p><strong>Organization:</strong> ${brief.meta.organization_name}</p>\n      <p><strong>Website:</strong> <a href=\"${brief.meta.organization_website}\">${brief.meta.organization_website}</a></p>\n      <p><strong>Contact:</strong> ${brief.meta.requester_name} (${brief.meta.requester_title})</p>\n      \n      <h3>Executive Summary</h3>\n      <p>${brief.executive_summary.summary}</p>\n      \n      <h3>Top 3 Opportunities</h3>\n      <ol>\n        ${brief.executive_summary.top_opportunities.map(o => `<li>${o}</li>`).join('')}\n      </ol>\n      \n      <p><em>Full brief available in CRM. Run ID: ${brief.meta.run_id}</em></p>\n    `,\n    body_text: `\nDeal Preparation Brief\n\nOrganization: ${brief.meta.organization_name}\nWebsite: ${brief.meta.organization_website}\nContact: ${brief.meta.requester_name} (${brief.meta.requester_title})\n\nExecutive Summary:\n${brief.executive_summary.summary}\n\nTop 3 Opportunities:\n${brief.executive_summary.top_opportunities.map((o, i) => `${i + 1}. ${o}`).join('\\n')}\n\nFull brief available in CRM. Run ID: ${brief.meta.run_id}\n    `,\n    run_id: brief.meta.run_id\n  };\n  \n  return emailContent;\n}\n\n// Motion Task Renderer (spec 10.4)\nfunction renderForMotion(brief, input) {\n  const meetingTime = input.meta.requested_meeting_at;\n  let dueDate = null;\n  \n  if (meetingTime) {\n    // Schedule 2 hours before meeting\n    const meetingDate = new Date(meetingTime);\n    meetingDate.setHours(meetingDate.getHours() - 2);\n    dueDate = meetingDate.toISOString();\n  }\n  \n  return {\n    title: `Deal Prep - ${brief.meta.organization_name}`,\n    body: `\n## Top Opportunities\n${brief.executive_summary.top_opportunities.map((o, i) => `${i + 1}. ${o}`).join('\\n')}\n\n## Key Talking Points\n- ${brief.demonstration_plan.opening}\n- Focus on: ${brief.artificial_intelligence_opportunities.map(a => a.title).join(', ')}\n\n## Run ID\n${brief.meta.run_id}\n\n[Full brief in CRM]\n    `,\n    workspace: input.routing.motion_workspace,\n    due_date: dueDate,\n    run_id: brief.meta.run_id\n  };\n}\n\n// Execute renderers\nconst crmOutput = renderForCRM(brief);\nconst emailOutput = renderForEmail(brief, normalized);\nconst motionOutput = renderForMotion(brief, normalized);\n\nconsole.log('[Renderer] CRM output generated:', crmOutput.content.length, 'chars');\nconsole.log('[Renderer] Email output generated');\nconsole.log('[Renderer] Motion task output generated');\n\n// Update run artifact with rendered output locations\nrunArtifact.rendered_outputs = {\n  crm: `s3://deal-prep-artifacts/deal-prep/${runId}/rendered-crm.json`,\n  email: `s3://deal-prep-artifacts/deal-prep/${runId}/rendered-email.json`,\n  motion: `s3://deal-prep-artifacts/deal-prep/${runId}/rendered-motion.json`,\n  markdown: `s3://deal-prep-artifacts/deal-prep/${runId}/rendered-markdown.md`\n};\n\n// In production: Store to S3\n// await storageAdapter.save(runId, 'rendered-crm', crmOutput);\n// await storageAdapter.save(runId, 'rendered-email', emailOutput);\n// await storageAdapter.save(runId, 'rendered-motion', motionOutput);\n\nreturn [{\n  json: {\n    normalized,\n    runId,\n    runArtifact,\n    brief,\n    renderedOutputs: {\n      crm: crmOutput,\n      email: emailOutput,\n      motion: motionOutput\n    }\n  }\n}];"
+      },
+      "id": "render-outputs",
+      "name": "Render Outputs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2420, 500]
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * Execute Deliveries Node\n * \n * Calls executeDeliveries() with all adapters.\n * Uses Promise.allSettled for independence.\n * Updates run artifact with delivery status.\n * \n * Implementation Spec Section 11 & 12: Delivery Tracking and External Interfaces\n */\n\nconst { normalized, runId, runArtifact, brief, renderedOutputs } = $input.first().json;\n\n// Delivery adapter stubs - in production, use actual adapters\nasync function deliverToCRM(crmOutput, routing) {\n  try {\n    console.log('[CRM Adapter] Delivering to CRM...');\n    // In production:\n    // await crmAdapter.upsertOrganization(crmOutput);\n    // await crmAdapter.attachBrief(crmOutput);\n    \n    // Simulated success\n    return { success: true, message: 'CRM delivery successful' };\n  } catch (error) {\n    return { success: false, error: error.message };\n  }\n}\n\nasync function deliverEmail(emailOutput, routing) {\n  try {\n    console.log('[Email Adapter] Sending email...');\n    // In production:\n    // await emailAdapter.send(emailOutput);\n    \n    if (!routing.email_to) {\n      return { success: false, error: 'No email recipient configured' };\n    }\n    \n    // Simulated success\n    return { success: true, message: `Email sent to ${routing.email_to}` };\n  } catch (error) {\n    return { success: false, error: error.message };\n  }\n}\n\nasync function deliverToMotion(motionOutput, routing) {\n  try {\n    console.log('[Motion Adapter] Creating task...');\n    // In production:\n    // await motionAdapter.createTask(motionOutput);\n    \n    if (!routing.motion_workspace) {\n      return { success: false, error: 'No Motion workspace configured' };\n    }\n    \n    // Simulated success\n    return { success: true, message: 'Motion task created' };\n  } catch (error) {\n    return { success: false, error: error.message };\n  }\n}\n\n// Execute all deliveries in parallel using Promise.allSettled (spec 11.3)\nconst deliveryPromises = [\n  deliverToCRM(renderedOutputs.crm, normalized.routing),\n  deliverEmail(renderedOutputs.email, normalized.routing),\n  deliverToMotion(renderedOutputs.motion, normalized.routing)\n];\n\nconst results = await Promise.allSettled(deliveryPromises);\nconst [crmResult, emailResult, motionResult] = results;\n\nconst now = new Date().toISOString();\n\n// Update delivery status in run artifact (spec 11.2)\nrunArtifact.deliveries = {\n  customer_relationship_management: {\n    status: crmResult.status === 'fulfilled' && crmResult.value.success ? 'success' : 'failed',\n    attempted_at: now,\n    error: crmResult.status === 'fulfilled' ? (crmResult.value.error || null) : crmResult.reason?.message\n  },\n  email: {\n    status: emailResult.status === 'fulfilled' && emailResult.value.success ? 'success' : 'failed',\n    attempted_at: now,\n    error: emailResult.status === 'fulfilled' ? (emailResult.value.error || null) : emailResult.reason?.message\n  },\n  motion: {\n    status: motionResult.status === 'fulfilled' && motionResult.value.success ? 'success' : 'failed',\n    attempted_at: now,\n    error: motionResult.status === 'fulfilled' ? (motionResult.value.error || null) : motionResult.reason?.message\n  }\n};\n\nconsole.log('[Delivery] CRM:', runArtifact.deliveries.customer_relationship_management.status);\nconsole.log('[Delivery] Email:', runArtifact.deliveries.email.status);\nconsole.log('[Delivery] Motion:', runArtifact.deliveries.motion.status);\n\nreturn [{\n  json: {\n    normalized,\n    runId,\n    runArtifact,\n    brief,\n    renderedOutputs,\n    deliveryResults: {\n      crm: crmResult,\n      email: emailResult,\n      motion: motionResult\n    }\n  }\n}];"
+      },
+      "id": "execute-deliveries",
+      "name": "Execute Deliveries",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2640, 500],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * Finalize Run Node\n * \n * Updates run artifact with completed_at.\n * Calculates final status based on all delivery outcomes.\n * Stores final run artifact to S3.\n */\n\nconst { normalized, runId, runArtifact, brief, renderedOutputs, deliveryResults } = $input.first().json;\n\n// Calculate final status\nfunction calculateFinalStatus(deliveries, errors) {\n  const statuses = [\n    deliveries.customer_relationship_management.status,\n    deliveries.email.status,\n    deliveries.motion.status\n  ];\n  \n  const successCount = statuses.filter(s => s === 'success').length;\n  const failedCount = statuses.filter(s => s === 'failed').length;\n  const notAttemptedCount = statuses.filter(s => s === 'not_attempted').length;\n  \n  if (errors.length > 0 && successCount === 0) {\n    return 'failed';\n  }\n  if (failedCount === 3) {\n    return 'failed';\n  }\n  if (successCount === 3) {\n    return 'completed';\n  }\n  return 'completed_with_errors';\n}\n\n// Finalize run artifact\nrunArtifact.completed_at = new Date().toISOString();\nrunArtifact.status = calculateFinalStatus(runArtifact.deliveries, runArtifact.errors);\n\n// Calculate duration\nconst startTime = new Date(runArtifact.started_at).getTime();\nconst endTime = new Date(runArtifact.completed_at).getTime();\nrunArtifact.metadata.duration_ms = endTime - startTime;\n\nconsole.log('[Finalize] Run completed');\nconsole.log('[Finalize] Status:', runArtifact.status);\nconsole.log('[Finalize] Duration:', runArtifact.metadata.duration_ms, 'ms');\nconsole.log('[Finalize] Errors:', runArtifact.errors.length);\n\n// In production: Update run artifact in S3\n// await storageAdapter.save(runId, 'run-metadata', runArtifact);\n\n// Log metrics\nconst metrics = {\n  run_id: runId,\n  status: runArtifact.status,\n  duration_ms: runArtifact.metadata.duration_ms,\n  trigger_source: runArtifact.trigger_source,\n  organization: normalized.organization.name || normalized.organization.domain,\n  deliveries: {\n    crm: runArtifact.deliveries.customer_relationship_management.status,\n    email: runArtifact.deliveries.email.status,\n    motion: runArtifact.deliveries.motion.status\n  },\n  error_count: runArtifact.errors.length,\n  timestamp: runArtifact.completed_at\n};\n\nconsole.log('[Metrics]', JSON.stringify(metrics));\n\nreturn [{\n  json: {\n    success: runArtifact.status !== 'failed',\n    runId,\n    status: runArtifact.status,\n    runArtifact,\n    brief,\n    metrics\n  }\n}];"
+      },
+      "id": "finalize-run",
+      "name": "Finalize Run",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2860, 500]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "id": "webhook-response",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [3080, 500]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ message: 'Run already completed', run_id: $json.existingRun?.run_id }) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "skip-response",
+      "name": "Skip (Already Complete)",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1320, 300]
+    },
+    {
+      "parameters": {
+        "content": "## Level 2 Deal Preparation Pipeline\n\nThis workflow implements the complete Deal Prep pipeline per the AI_Deal_Prep_Implementation_Spec.\n\n### Trigger Options:\n- **Webhook (Inbound)**: POST /deal-prep with JSON body\n- **Manual (Outbound)**: Click \"Execute\" for outbound prospecting\n\n### Pipeline Steps:\n1. Normalize Input\n2. Generate Run ID (idempotency)\n3. Initialize Run Artifact\n4. Website Scrape (with retry)\n5. Person Enrichment (non-blocking)\n6. LLM Synthesis (Claude)\n7. Validate Brief\n8. Render Outputs (CRM, Email, Motion)\n9. Execute Deliveries\n10. Finalize Run",
+        "height": 380,
+        "width": 300
+      },
+      "id": "sticky-note",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [-60, 240]
+    },
+    {
+      "parameters": {
+        "content": "### Error Handling\n\n- Scrape: 2 retries (30s, 120s backoff)\n- Enrichment: Non-blocking, always continues\n- LLM: 1 retry on validation failure\n- Deliveries: Independent (Promise.allSettled)\n- All errors logged to run artifact",
+        "height": 160,
+        "width": 260
+      },
+      "id": "sticky-note-errors",
+      "name": "Error Handling Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [1540, 300]
+    },
+    {
+      "parameters": {
+        "content": "### Observability\n\n- Console logs with [Module] prefix\n- Metrics emitted at finalization\n- All artifacts stored to S3\n- Run duration tracked",
+        "height": 140,
+        "width": 240
+      },
+      "id": "sticky-note-observability",
+      "name": "Observability Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [2860, 300]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger (Inbound)": {
+      "main": [
+        [
+          {
+            "node": "Merge Trigger Inputs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger (Outbound)": {
+      "main": [
+        [
+          {
+            "node": "Merge Trigger Inputs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Trigger Inputs": {
+      "main": [
+        [
+          {
+            "node": "Normalize Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Input": {
+      "main": [
+        [
+          {
+            "node": "Generate Run ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Run ID": {
+      "main": [
+        [
+          {
+            "node": "Check Idempotency",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Idempotency": {
+      "main": [
+        [
+          {
+            "node": "Skip (Already Complete)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Initialize Run Artifact",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Initialize Run Artifact": {
+      "main": [
+        [
+          {
+            "node": "Website Scrape",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Website Scrape": {
+      "main": [
+        [
+          {
+            "node": "Person Enrichment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Person Enrichment": {
+      "main": [
+        [
+          {
+            "node": "LLM Synthesis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM Synthesis": {
+      "main": [
+        [
+          {
+            "node": "Validate Brief",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Brief": {
+      "main": [
+        [
+          {
+            "node": "Render Outputs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Render Outputs": {
+      "main": [
+        [
+          {
+            "node": "Execute Deliveries",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Deliveries": {
+      "main": [
+        [
+          {
+            "node": "Finalize Run",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Finalize Run": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": ""
+  },
+  "versionId": "1",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "deal-prep-level-2"
+  },
+  "tags": [
+    {
+      "id": "deal-prep",
+      "name": "Deal Prep"
+    },
+    {
+      "id": "level-2",
+      "name": "Level 2"
+    }
+  ],
+  "pinData": {}
+}

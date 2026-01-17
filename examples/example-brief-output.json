@@ -1,0 +1,178 @@
+{
+  "_comment": "Complete canonical Deal Prep Brief satisfying all hard constraints from Implementation Spec section 9.3",
+  "meta": {
+    "run_id": "run_a1b2c3d4e5f6789012345678901234567890abcdef",
+    "generated_at": "2026-01-17T14:33:15Z",
+    "trigger_source": "inbound",
+    "organization_name": "Community Partners Foundation",
+    "organization_website": "https://www.communitypartnersfoundation.org",
+    "organization_domain": "communitypartnersfoundation.org",
+    "requester_name": "Sarah Mitchell",
+    "requester_title": "Director of Volunteer Services",
+    "source_urls": [
+      "https://www.communitypartnersfoundation.org/",
+      "https://www.communitypartnersfoundation.org/about-us",
+      "https://www.communitypartnersfoundation.org/programs",
+      "https://www.communitypartnersfoundation.org/volunteer",
+      "https://www.communitypartnersfoundation.org/donate",
+      "https://www.communitypartnersfoundation.org/staff",
+      "https://www.communitypartnersfoundation.org/contact"
+    ]
+  },
+  "executive_summary": {
+    "summary": "Community Partners Foundation is a 25-year-old nonprofit managing 200+ volunteers across food security, youth mentorship, and senior companion programs. Sarah Mitchell, Director of Volunteer Services, is seeking solutions to streamline volunteer coordination. With 12,000+ annual volunteer hours and 5 distinct program areas, CPF has significant operational complexity that AI-powered engagement tools can address.",
+    "top_opportunities": [
+      "Automate volunteer onboarding and orientation scheduling to reduce Sarah's administrative burden",
+      "Deploy AI chatbot on volunteer page to answer FAQs and pre-qualify applicants 24/7",
+      "Create personalized volunteer matching based on skills, availability, and program needs"
+    ]
+  },
+  "organization_understanding": {
+    "mission": "To mobilize and empower volunteers to address critical community needs through coordinated service, education, and partnership.",
+    "programs": [
+      {
+        "name": "Food Security Initiative",
+        "summary": "Flagship program coordinating food distribution including a weekly pantry serving 200+ families, mobile food truck for rural areas, and school backpack program for children."
+      },
+      {
+        "name": "Youth Mentorship Program",
+        "summary": "Connects adult mentors with young people for one-on-one mentoring, group activities, academic tutoring, and career exploration workshops. Requires 1-hour weekly commitment for minimum 12 months."
+      },
+      {
+        "name": "Senior Companion Program",
+        "summary": "Combats isolation among elderly neighbors through home visits, transportation assistance, technology help, and social events for homebound seniors."
+      },
+      {
+        "name": "Community Garden Network",
+        "summary": "Manages 12 community gardens across the county providing fresh produce and outdoor gathering spaces."
+      },
+      {
+        "name": "Emergency Response Team",
+        "summary": "Trained volunteers ready to assist during natural disasters and community emergencies."
+      }
+    ],
+    "audiences": [
+      "Prospective volunteers seeking meaningful community service opportunities",
+      "Families facing food insecurity",
+      "At-risk youth needing mentorship",
+      "Homebound seniors experiencing isolation",
+      "Community members interested in gardening",
+      "Donors and corporate partners"
+    ]
+  },
+  "website_analysis": {
+    "overall_tone": "Warm, community-focused, and inviting. The website emphasizes collective action and the value of every individual's contribution. Language is accessible and encouraging without being overly formal.",
+    "strengths": [
+      "Clear impact metrics prominently displayed (12,000+ volunteer hours, 200+ volunteers, 15,000 served)",
+      "Well-organized program pages with specific volunteer role descriptions",
+      "Transparent about volunteer requirements and expectations",
+      "Strong financial transparency messaging (87% to programs, 4-star Charity Navigator)",
+      "Multiple clear calls-to-action throughout the site"
+    ],
+    "gaps": [
+      "No FAQ page (returned 404 error) - visitors may have unanswered questions",
+      "No online volunteer application form visible - requires manual process",
+      "Events page timed out - may indicate technical issues or missing functionality",
+      "No testimonials from current volunteers or program beneficiaries",
+      "Limited information about virtual volunteering options mentioned but not detailed"
+    ],
+    "volunteer_flow_observations": "The volunteer page provides detailed role descriptions and requirements, but the path to actually signing up is unclear. The 'Apply Now' CTA exists but the actual application process appears to require direct contact rather than self-service online submission. The 4-step process (application, orientation, background check, training) is documented but could be streamlined with automation.",
+    "donation_flow_observations": "Donation page is well-structured with clear giving levels and impact statements. Monthly giving program 'Sustainer Circle' is highlighted with tangible benefits. The page includes financial transparency information which builds trust. However, there's no visible online donation form integrated into the page."
+  },
+  "leadership_and_staff": {
+    "executive_leader": {
+      "name": "Dr. Robert Martinez",
+      "role": "Executive Director",
+      "summary": "Leading CPF since 2018 with over 20 years of nonprofit leadership experience. Holds a doctorate in Public Administration from State University. Previously served as Deputy Director of the Regional United Way. Emphasizes being inspired by volunteer generosity and community resilience."
+    },
+    "other_staff_mentions": [
+      {
+        "name": "Amanda Chen",
+        "role": "Deputy Director"
+      },
+      {
+        "name": "Sarah Mitchell",
+        "role": "Director of Volunteer Services"
+      },
+      {
+        "name": "Maria Santos",
+        "role": "Food Security Program Manager"
+      },
+      {
+        "name": "David Thompson",
+        "role": "Youth Mentorship Coordinator"
+      },
+      {
+        "name": "Patricia Green",
+        "role": "Senior Companion Program Lead"
+      },
+      {
+        "name": "Jennifer Walsh",
+        "role": "Director of Development"
+      }
+    ]
+  },
+  "requester_profile": {
+    "summary": "Sarah Mitchell has been Director of Volunteer Services at CPF for 4 years. Her background includes 8 years at United Way progressing from Volunteer Coordinator to Senior Program Manager. She holds a Master's in Nonprofit Management and is a Certified Volunteer Administrator (CVA). She has spoken at regional conferences about volunteer retention and digital engagement, indicating openness to technology solutions.",
+    "conversation_angle": "Lead with empathy for the challenges of coordinating 200+ volunteers across 5 programs. Reference her conference speaking on digital engagement to establish credibility about understanding modern volunteer management. Her CVA certification suggests she values professional development and best practices - position AI tools as the next evolution in volunteer management excellence."
+  },
+  "artificial_intelligence_opportunities": [
+    {
+      "title": "24/7 Volunteer Inquiry Chatbot",
+      "why_it_matters": "With no FAQ page and multiple volunteer programs, prospective volunteers likely have questions that go unanswered outside business hours. An AI chatbot can answer questions about requirements, time commitments, and program details instantly - capturing interest before it fades.",
+      "demonstration_hook": "Show how the bot can explain the difference between Youth Mentorship (12-month commitment) and Food Pantry (2 hours/week) roles, then guide the visitor to the right application based on their availability."
+    },
+    {
+      "title": "Automated Volunteer Onboarding Workflow",
+      "why_it_matters": "The current 4-step process (apply, orientation, background check, training) requires manual coordination. Automating orientation scheduling, document collection, and status updates would free Sarah's team to focus on relationship-building rather than administration.",
+      "demonstration_hook": "Demonstrate a conversation where a new volunteer signs up, immediately receives orientation options, and gets automatic reminders - all without staff intervention until the personal welcome call."
+    },
+    {
+      "title": "Intelligent Volunteer-to-Opportunity Matching",
+      "why_it_matters": "With 5 distinct programs and diverse volunteer profiles, matching the right person to the right role is crucial for retention. AI can analyze skills, availability, and interests to recommend optimal placements.",
+      "demonstration_hook": "Walk through how a retired teacher mentioning 'working with kids' and 'weekday availability' would be recommended for Youth Mentorship, while a student mentioning 'weekend mornings' would be directed to Food Pantry."
+    }
+  ],
+  "demonstration_plan": {
+    "opening": "Sarah, I reviewed Community Partners Foundation's website and was impressed by your impact - 12,000 volunteer hours across 5 programs is significant. I noticed you mentioned at the Nonprofit Tech Summit that managing 200+ volunteers is becoming overwhelming. Let me show you how AI can handle the routine inquiries so your team can focus on the human connections that matter most.",
+    "steps": [
+      "Show a simulated visitor asking about volunteer opportunities on the CPF website",
+      "Demonstrate the chatbot explaining different program options and time commitments",
+      "Walk through automated volunteer application intake and qualification",
+      "Show how orientation scheduling can be automated with smart availability matching",
+      "Display a sample volunteer dashboard showing engagement metrics and follow-up prompts",
+      "Preview the donor engagement use case as a natural expansion opportunity"
+    ],
+    "example_bot_responses": [
+      "Welcome to Community Partners Foundation! I can help you find the perfect volunteer opportunity. Are you interested in working with youth, seniors, or families in need?",
+      "Our Youth Mentorship Program asks for a 1-hour weekly commitment for at least 12 months. This longer commitment helps build meaningful relationships with young people. Does this timeframe work for you?",
+      "Great choice! The Food Pantry needs volunteers Tuesdays and Thursdays from 9am-12pm. I can help you schedule your orientation session right now. What week works best for you?",
+      "I've scheduled your orientation for Thursday, January 30th at 10am. You'll receive an email with what to bring and parking information. Is there anything else I can help you with today?"
+    ]
+  },
+  "objections_and_rebuttals": [
+    {
+      "objection": "We're a small nonprofit - we don't have the budget for AI technology.",
+      "rebuttal": "I understand budget constraints are real for nonprofits. Our pricing is designed for organizations like yours, and we often see ROI within 60 days through reduced administrative time. If Sarah saves just 5 hours per week on routine inquiries, that's over 250 hours annually she can redirect to volunteer engagement and retention."
+    },
+    {
+      "objection": "Our volunteers expect personal connection - won't AI feel impersonal?",
+      "rebuttal": "That's actually why AI is perfect here. Right now, volunteers might wait hours or days for a response to simple questions. AI handles the routine inquiries instantly, 24/7, so your team can spend more quality time on the personal moments that matter - the welcome calls, the recognition, the relationship-building."
+    },
+    {
+      "objection": "We're not technical - this sounds complicated to set up and maintain.",
+      "rebuttal": "We handle all the technical setup and train the AI on your specific programs using your website content. Your team just reviews and refines the responses. Most clients are up and running in under a week, and we provide ongoing support. Sarah mentioned at the conference she's interested in digital engagement - this is exactly that evolution."
+    }
+  ],
+  "opening_script": "Hi Sarah, this is [Name] from MyRecruiter AI. I enjoyed our chat at the Nonprofit Tech Summit about volunteer coordination. I reviewed CPF's website and your work across food security, youth mentorship, and senior programs is impressive. I have ideas on how AI can help manage your 200+ volunteers more efficiently. Do you have 15 minutes this week for a quick demo?",
+  "follow_up_emails": {
+    "short_version": {
+      "subject": "Quick follow-up: AI for volunteer management at CPF",
+      "body": "Hi Sarah,\n\nGreat speaking with you about volunteer management challenges at Community Partners Foundation.\n\nI looked at your website and see clear opportunities:\n- 24/7 chatbot for volunteer inquiries\n- Automated onboarding scheduling\n- Smart matching across your 5 programs\n\nWould 15 minutes work this week to show you a quick demo tailored to CPF?\n\nBest,\n[Name]"
+    },
+    "warm_version": {
+      "subject": "Ideas for CPF volunteer coordination (from Nonprofit Tech Summit)",
+      "body": "Hi Sarah,\n\nIt was great meeting you at the Nonprofit Tech Summit. Your passion for volunteer engagement really came through, and I've been thinking about what you shared regarding the challenges of coordinating 200+ volunteers across Community Partners Foundation's programs.\n\nI spent some time on your website and was impressed by your impact - 12,000 volunteer hours annually across food security, youth mentorship, and senior companion programs is remarkable.\n\nI noticed a few areas where AI could help:\n- No FAQ page means prospective volunteers may have unanswered questions\n- The onboarding process (application, orientation, background check, training) could be partially automated\n- Matching volunteers to the right program based on their skills and availability\n\nGiven your background in digital engagement and volunteer administration, I think you'd appreciate seeing how other nonprofits are using conversational AI to handle routine inquiries while their teams focus on relationship-building.\n\nWould you have 20 minutes this week for a brief demo customized to CPF's programs?\n\nLooking forward to connecting,\n[Name]"
+    }
+  }
+}

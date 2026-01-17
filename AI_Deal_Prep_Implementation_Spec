@@ -1,0 +1,542 @@
+# Level 2 Deal Preparation Project
+## Authoritative Implementation Specification
+
+---
+
+## 1. Scope and Authority
+
+This document specifies the complete implementation behavior and contracts for the Level 2 Deal Preparation Project.
+
+It is authoritative for:
+- Canonical data structures
+- Validation requirements
+- Workflow sequencing and idempotency
+- Error handling and retries
+- Artifact storage and delivery semantics
+- External system interfaces
+
+If any implementation detail is not explicitly defined here, it must be treated as undefined and must not be invented without updating this document.
+
+---
+
+## 2. System Components and Responsibilities
+
+### 2.1 Build-Time Component
+
+Claude Code is the designated build-time system and is responsible for authoring and maintaining:
+- Website scraping logic (including Firecrawl usage)
+- Prompt templates
+- Schema definitions
+- Validation rules
+- Renderers
+- Integration adapters
+- Test harnesses and fixtures
+
+### 2.2 Runtime Orchestrator
+
+n8n is the designated runtime orchestrator and is responsible for:
+- Receiving inbound and outbound triggers
+- Executing the workflow in the defined order
+- Enforcing retry rules
+- Recording run status
+- Producing operational logs
+- Coordinating delivery to external systems
+
+### 2.3 External Services (Logical)
+
+The system may integrate with the following logical services:
+- Website crawling and extraction service
+- Large language model inference service
+- Durable artifact storage system
+- Customer Relationship Management system
+- Email delivery service
+- Motion task management system
+
+---
+
+## 3. Canonical Concepts
+
+### 3.1 Run
+
+A Run is a single end-to-end execution of the Level 2 pipeline initiated by either an inbound or outbound trigger.
+
+### 3.2 Canonical Artifact
+
+The canonical artifact is the structured JavaScript Object Notation output representing the Deal Preparation Brief. All rendered views are derived from this artifact.
+
+### 3.3 Evidence
+
+Evidence refers to source website content identified by Uniform Resource Locator and extracted text used to ground claims in the brief.
+
+---
+
+## 4. Canonical Input Contract
+
+### 4.1 Canonical Input Schema
+
+{
+  "meta": {
+    "trigger_source": "inbound | outbound",
+    "submitted_at": "ISO-8601 timestamp",
+    "run_id": "string",
+    "requested_meeting_at": "ISO-8601 timestamp | null",
+    "timezone": "IANA timezone string | null"
+  },
+  "organization": {
+    "name": "string | null",
+    "website": "string | null",
+    "domain": "string | null"
+  },
+  "contact": {
+    "full_name": "string | null",
+    "first_name": "string | null",
+    "last_name": "string | null",
+    "title": "string | null",
+    "email": "string | null",
+    "phone": "string | null",
+    "linkedin_url": "string | null"
+  },
+  "notes": {
+    "comments": "string | null",
+    "intent_topic": "string | null",
+    "source_context": "string | null"
+  },
+  "routing": {
+    "crm_target": "string | null",
+    "email_to": "string | null",
+    "email_cc": ["string"],
+    "motion_workspace": "string | null"
+  }
+}
+
+### 4.2 Input Validation Rules
+
+- At least one of organization.name or organization.website must be present.
+- If organization.website is present, organization.domain must be derived using standard domain parsing rules.
+- meta.submitted_at is required.
+- meta.trigger_source is required.
+- All other fields may be null.
+- If meeting time is known, meta.requested_meeting_at must be populated.
+
+### 4.3 Canonicalization Rules
+
+- Trim leading and trailing whitespace from all string fields.
+- Normalize email addresses to lowercase.
+- Normalize website Uniform Resource Locators by ensuring scheme presence and removing unsafe trailing slashes.
+- Attempt contact name parsing only when unambiguous; otherwise preserve full_name.
+
+---
+
+## 5. Run Identifier and Idempotency
+
+### 5.1 Run Identifier Generation
+
+The run identifier must be generated deterministically.
+
+Algorithm:
+1. Determine organization identifier in order of precedence:
+   - organization.domain
+   - parsed domain from organization.website
+   - normalized organization.name
+2. Construct the input string:
+   trigger_source | submitted_at_rounded | organization_identifier
+3. Round submitted_at:
+   - inbound triggers: nearest five minutes
+   - outbound triggers: nearest sixty minutes
+4. Hash using SHA-256.
+5. Prefix with "run_".
+
+### 5.2 Idempotency Enforcement
+
+Before executing any side-effect:
+- Check for an existing run artifact with the same run identifier.
+- If completed, exit without duplication.
+- If partially completed, resume only missing steps.
+
+---
+
+## 6. Website Research and Extraction
+
+### 6.1 Crawl Targets
+
+The system must attempt extraction from:
+- Home
+- About
+- Programs or Services
+- Volunteer
+- Donate
+- Frequently Asked Questions
+- Staff or Leadership
+- Contact
+
+### 6.2 Discovery Strategy
+
+- Prefer sitemap discovery when available.
+- Fall back to internal link traversal.
+- Disallow external domains.
+
+Constraints:
+- Maximum pages: configurable, default twenty-five
+- Maximum depth: configurable, default three
+
+### 6.3 Extraction Output Schema
+
+{
+  "scrape_meta": {
+    "started_at": "ISO-8601 timestamp",
+    "completed_at": "ISO-8601 timestamp",
+    "source_domain": "string",
+    "tool": "string",
+    "pages_fetched": "number"
+  },
+  "pages": [
+    {
+      "url": "string",
+      "final_url": "string",
+      "page_type": "home | about | programs | volunteer | donate | faq | staff | contact | other",
+      "title": "string | null",
+      "extracted_markdown": "string",
+      "ctas": ["string"],
+      "people_mentions": [
+        { "name": "string", "role": "string | null" }
+      ]
+    }
+  ],
+  "errors": ["string"]
+}
+
+### 6.4 Extraction Rules
+
+- Remove navigation, footer, and boilerplate.
+- Preserve headings and lists.
+- Deduplicate pages by final Uniform Resource Locator.
+- Preserve all source Uniform Resource Locators.
+
+### 6.5 Failure Handling
+
+- Website extraction failure must not halt execution.
+- Retry twice with exponential backoff (thirty seconds, then one hundred twenty seconds).
+- Record all errors.
+
+---
+
+## 7. Person Enrichment
+
+### 7.1 Allowed Behavior
+
+- Summarize explicitly provided LinkedIn Uniform Resource Locators.
+- Use configured safe enrichment providers.
+
+### 7.2 Prohibited Behavior
+
+- No scraping of restricted platforms as a requirement.
+- No guessing or hallucination.
+
+### 7.3 Enrichment Output Schema
+
+{
+  "requester_profile": {
+    "summary": "string",
+    "confidence": "high | medium | low | not_available"
+  },
+  "errors": ["string"]
+}
+
+If unavailable:
+- summary must be “Not found”
+- confidence must be “not_available”
+
+---
+
+## 8. Large Language Model Synthesis
+
+### 8.1 Input Requirements
+
+The model must receive:
+- Canonical input payload
+- Website scrape output
+- Enrichment output
+- Explicit constraints
+- Evidence and hallucination policy
+
+### 8.2 Output Rules
+
+- Output must be valid JavaScript Object Notation only.
+- One retry is allowed for format or constraint violations.
+
+---
+
+## 9. Canonical Large Language Model Output Contract
+
+### 9.1 Purpose
+
+This section defines the **complete, authoritative JavaScript Object Notation schema** for the Level 2 Deal Preparation Brief.
+
+This schema is the **canonical artifact** of the system.  
+All downstream rendering, delivery, and storage operations must derive from this object.
+
+If the model output does not conform exactly to this schema, the run must be retried or failed.
+
+---
+
+### 9.2 Output Schema (Canonical Deal Preparation Brief)
+
+{
+  "meta": {
+    "run_id": "string",
+    "generated_at": "ISO-8601 timestamp",
+    "trigger_source": "inbound | outbound",
+    "organization_name": "string | Not found",
+    "organization_website": "string | Not found",
+    "organization_domain": "string | Not found",
+    "requester_name": "string | Not found",
+    "requester_title": "string | Not found",
+    "source_urls": ["string"]
+  },
+
+  "executive_summary": {
+    "summary": "string",
+    "top_opportunities": ["string", "string", "string"]
+  },
+
+  "organization_understanding": {
+    "mission": "string",
+    "programs": [
+      {
+        "name": "string",
+        "summary": "string"
+      }
+    ],
+    "audiences": ["string"]
+  },
+
+  "website_analysis": {
+    "overall_tone": "string",
+    "strengths": ["string"],
+    "gaps": ["string"],
+    "volunteer_flow_observations": "string",
+    "donation_flow_observations": "string"
+  },
+
+  "leadership_and_staff": {
+    "executive_leader": {
+      "name": "string",
+      "role": "string",
+      "summary": "string"
+    },
+    "other_staff_mentions": [
+      {
+        "name": "string",
+        "role": "string"
+      }
+    ]
+  },
+
+  "requester_profile": {
+    "summary": "string",
+    "conversation_angle": "string"
+  },
+
+  "artificial_intelligence_opportunities": [
+    {
+      "title": "string",
+      "why_it_matters": "string",
+      "demonstration_hook": "string"
+    },
+    {
+      "title": "string",
+      "why_it_matters": "string",
+      "demonstration_hook": "string"
+    },
+    {
+      "title": "string",
+      "why_it_matters": "string",
+      "demonstration_hook": "string"
+    }
+  ],
+
+  "demonstration_plan": {
+    "opening": "string",
+    "steps": ["string"],
+    "example_bot_responses": ["string"]
+  },
+
+  "objections_and_rebuttals": [
+    {
+      "objection": "string",
+      "rebuttal": "string"
+    },
+    {
+      "objection": "string",
+      "rebuttal": "string"
+    },
+    {
+      "objection": "string",
+      "rebuttal": "string"
+    }
+  ],
+
+  "opening_script": "string",
+
+  "follow_up_emails": {
+    "short_version": {
+      "subject": "string",
+      "body": "string"
+    },
+    "warm_version": {
+      "subject": "string",
+      "body": "string"
+    }
+  }
+}
+
+---
+
+### 9.3 Hard Constraints (Non-Negotiable)
+
+- Exactly three top opportunities
+- Exactly three artificial intelligence opportunities
+- Exactly three objections and rebuttals
+- Executive summary must be ≤ 600 characters
+- Opening script must be ≤ 450 characters
+- Demonstration plan must contain ≤ 6 steps
+- Short follow-up email body must be ≤ 120 words
+- Warm follow-up email body must be ≤ 180 words
+- Missing information must be explicitly labeled “Not found”
+
+---
+
+### 9.4 Evidence and Hallucination Rules
+
+- No facts may be invented
+- All website-derived claims must be traceable to `meta.source_urls`
+- If evidence is insufficient, the system must state this explicitly
+- Confidence must never be simulated
+
+---
+
+## 10. Rendering Specifications
+
+### 10.1 Canonical Rendering Principle
+
+The structured JavaScript Object Notation brief is the **only canonical artifact**.
+
+All rendered formats are views derived from it.
+
+---
+
+### 10.2 Customer Relationship Management Rendering
+
+- Render the full brief as formatted Markdown
+- Preserve section hierarchy
+- Include headings matching schema sections
+- Attach rendered content as a note or document to the organization record
+- Link the run identifier in the Customer Relationship Management record
+
+---
+
+### 10.3 Email Rendering
+
+- Email must contain:
+  - Executive summary
+  - Top three opportunities
+  - Link or reference to full brief
+- Email must never include the full brief inline
+- Email must be skimmable in under one minute
+
+---
+
+### 10.4 Motion Task Rendering
+
+- Task title: “Deal Prep – {Organization Name}”
+- Task body must include:
+  - Top three opportunities
+  - Link or reference to full brief
+- If meeting time is known:
+  - Task must be scheduled two hours before meeting
+- If meeting time is unknown:
+  - Task must be created without a due date
+
+---
+
+## 11. Delivery Tracking Contract
+
+### 11.1 Purpose
+
+Delivery tracking ensures idempotency, auditability, and safe retries.
+
+---
+
+### 11.2 Delivery Status Schema
+
+{
+  "deliveries": {
+    "customer_relationship_management": {
+      "status": "not_attempted | success | failed",
+      "attempted_at": "ISO-8601 timestamp | null",
+      "error": "string | null"
+    },
+    "email": {
+      "status": "not_attempted | success | failed",
+      "attempted_at": "ISO-8601 timestamp | null",
+      "error": "string | null"
+    },
+    "motion": {
+      "status": "not_attempted | success | failed",
+      "attempted_at": "ISO-8601 timestamp | null",
+      "error": "string | null"
+    }
+  }
+}
+
+---
+
+### 11.3 Delivery Rules
+
+- Each delivery channel must be attempted independently
+- Failure in one channel must not block others
+- Failed deliveries may be retried safely using the run identifier
+- All delivery outcomes must be persisted to the Run Artifact
+
+---
+
+## 12. External Interface Contracts
+
+### 12.1 Customer Relationship Management Interface (Vendor-Agnostic)
+
+Required operations:
+- Upsert organization by domain or website
+- Upsert contact by email when available
+- Associate contact to organization
+- Attach Deal Preparation Brief artifact
+- Record run metadata
+
+No destructive updates are permitted.
+
+---
+
+### 12.2 Email Interface
+
+Required capabilities:
+- Send plain-text or HTML email
+- Support subject and body
+- Support multiple recipients
+- Report delivery success or failure
+
+Email sending must be idempotent per run identifier.
+
+---
+
+### 12.3 Motion Interface
+
+Required capabilities:
+- Create task
+- Set title and body
+- Optionally set due date
+- Associate task with correct workspace
+
+Motion failures must be logged but must not halt the run.
+
+---
+
+End of authoritative implementation specification.

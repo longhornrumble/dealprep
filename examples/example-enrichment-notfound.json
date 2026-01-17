@@ -1,0 +1,10 @@
+{
+  "_comment": "Enrichment output when LinkedIn URL is not provided or profile cannot be found",
+  "requester_profile": {
+    "summary": "Not found",
+    "confidence": "not_available"
+  },
+  "errors": [
+    "No LinkedIn URL provided in input contact data"
+  ]
+}

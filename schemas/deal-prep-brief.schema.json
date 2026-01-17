@@ -1,0 +1,157 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://myrecruiter.ai/schemas/deal-prep/deal-prep-brief.schema.json",
+  "title": "DealPrepBrief",
+  "description": "Generated Deal Preparation Brief with insights and recommendations",
+  "type": "object",
+  "required": ["runId", "prospect", "insights", "recommendations", "sources", "generatedAt", "confidence"],
+  "properties": {
+    "runId": {
+      "type": "string",
+      "description": "Unique identifier for this run",
+      "pattern": "^\\d{8}_\\d{6}_[a-zA-Z0-9_-]+$"
+    },
+    "prospect": {
+      "type": "object",
+      "required": ["companyName"],
+      "properties": {
+        "companyName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "companyOverview": {
+          "type": "string",
+          "description": "Brief overview of the company"
+        },
+        "industry": {
+          "type": "string",
+          "description": "Primary industry or sector"
+        },
+        "size": {
+          "type": "string",
+          "description": "Company size (employees, revenue, etc.)"
+        },
+        "keyProducts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Main products or services"
+        }
+      }
+    },
+    "contact": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "background": {
+          "type": "string",
+          "description": "Professional background summary"
+        },
+        "relevantExperience": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Experience relevant to the deal"
+        }
+      }
+    },
+    "insights": {
+      "type": "object",
+      "properties": {
+        "painPoints": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Identified pain points or challenges"
+        },
+        "opportunities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Opportunities for engagement"
+        },
+        "competitivePosition": {
+          "type": "string",
+          "description": "Company's competitive positioning"
+        },
+        "decisionMakingProcess": {
+          "type": "string",
+          "description": "Expected decision-making process"
+        }
+      }
+    },
+    "recommendations": {
+      "type": "object",
+      "properties": {
+        "talkingPoints": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Key talking points for the conversation"
+        },
+        "questionsToAsk": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Discovery questions to ask"
+        },
+        "objectionHandling": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Potential objections and how to address them"
+        },
+        "nextSteps": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Recommended next steps"
+        }
+      }
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["type", "description"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["website", "linkedin", "manual"]
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Sources used to generate this brief"
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp of generation"
+    },
+    "confidence": {
+      "type": "string",
+      "enum": ["high", "medium", "low"],
+      "description": "Confidence level in the generated brief"
+    }
+  }
+}

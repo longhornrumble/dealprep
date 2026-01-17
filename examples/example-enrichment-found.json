@@ -1,0 +1,8 @@
+{
+  "_comment": "Enrichment output with successful profile lookup via LinkedIn URL",
+  "requester_profile": {
+    "summary": "Sarah Mitchell has been Director of Volunteer Services at Community Partners Foundation for 4 years. Previously, she spent 8 years at United Way of Greater Springfield, progressing from Volunteer Coordinator to Senior Program Manager. She holds a Master's degree in Nonprofit Management from State University and is a Certified Volunteer Administrator (CVA). Sarah has spoken at regional nonprofit conferences about volunteer retention strategies and digital engagement. She serves on the board of the local chapter of the Association for Volunteer Administration.",
+    "confidence": "high"
+  },
+  "errors": []
+}

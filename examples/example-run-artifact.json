@@ -1,0 +1,16 @@
+{
+  "_comment": "Complete run artifact showing successful execution of all stages and deliveries",
+  "run_id": "run_a1b2c3d4e5f6789012345678901234567890abcdef",
+  "trigger_source": "inbound",
+  "input_payload": "s3://deal-prep-artifacts/runs/run_a1b2c3d4e5f6789012345678901234567890abcdef/input.json",
+  "scrape_result": "s3://deal-prep-artifacts/runs/run_a1b2c3d4e5f6789012345678901234567890abcdef/scrape-output.json",
+  "llm_output": "s3://deal-prep-artifacts/runs/run_a1b2c3d4e5f6789012345678901234567890abcdef/brief-output.json",
+  "deliveries": {
+    "crm": "success",
+    "email": "success",
+    "motion": "success"
+  },
+  "errors": [],
+  "started_at": "2026-01-17T14:32:00Z",
+  "completed_at": "2026-01-17T14:34:22Z"
+}

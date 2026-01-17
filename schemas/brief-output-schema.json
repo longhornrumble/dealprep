@@ -1,0 +1,348 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://myrecruiter.ai/schemas/deal-prep/brief-output-schema.json",
+  "title": "Deal Preparation Brief Output Schema",
+  "description": "Canonical LLM output contract for Level 2 Deal Preparation Brief (Implementation Spec §9.2)",
+  "type": "object",
+  "required": [
+    "meta",
+    "executive_summary",
+    "organization_understanding",
+    "website_analysis",
+    "leadership_and_staff",
+    "requester_profile",
+    "artificial_intelligence_opportunities",
+    "demonstration_plan",
+    "objections_and_rebuttals",
+    "opening_script",
+    "follow_up_emails"
+  ],
+  "properties": {
+    "meta": {
+      "type": "object",
+      "description": "Metadata about the generated brief",
+      "required": [
+        "run_id",
+        "generated_at",
+        "trigger_source",
+        "organization_name",
+        "organization_website",
+        "organization_domain",
+        "requester_name",
+        "requester_title",
+        "source_urls"
+      ],
+      "properties": {
+        "run_id": {
+          "type": "string",
+          "description": "Unique run identifier"
+        },
+        "generated_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO-8601 timestamp when the brief was generated"
+        },
+        "trigger_source": {
+          "type": "string",
+          "enum": ["inbound", "outbound"],
+          "description": "Source of the trigger"
+        },
+        "organization_name": {
+          "type": "string",
+          "description": "Organization name or 'Not found'"
+        },
+        "organization_website": {
+          "type": "string",
+          "description": "Organization website or 'Not found'"
+        },
+        "organization_domain": {
+          "type": "string",
+          "description": "Organization domain or 'Not found'"
+        },
+        "requester_name": {
+          "type": "string",
+          "description": "Requester's name or 'Not found'"
+        },
+        "requester_title": {
+          "type": "string",
+          "description": "Requester's title or 'Not found'"
+        },
+        "source_urls": {
+          "type": "array",
+          "description": "URLs used as evidence for the brief",
+          "items": {
+            "type": "string",
+            "format": "uri"
+          }
+        }
+      }
+    },
+    "executive_summary": {
+      "type": "object",
+      "description": "High-level summary and top opportunities",
+      "required": ["summary", "top_opportunities"],
+      "properties": {
+        "summary": {
+          "type": "string",
+          "maxLength": 600,
+          "description": "Executive summary (maximum 600 characters)"
+        },
+        "top_opportunities": {
+          "type": "array",
+          "description": "Exactly three top opportunities",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 3,
+          "maxItems": 3
+        }
+      }
+    },
+    "organization_understanding": {
+      "type": "object",
+      "description": "Understanding of the organization's mission, programs, and audiences",
+      "required": ["mission", "programs", "audiences"],
+      "properties": {
+        "mission": {
+          "type": "string",
+          "description": "Organization's mission statement or summary"
+        },
+        "programs": {
+          "type": "array",
+          "description": "Organization's programs or services",
+          "items": {
+            "type": "object",
+            "required": ["name", "summary"],
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Program name"
+              },
+              "summary": {
+                "type": "string",
+                "description": "Program summary"
+              }
+            }
+          }
+        },
+        "audiences": {
+          "type": "array",
+          "description": "Target audiences served",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "website_analysis": {
+      "type": "object",
+      "description": "Analysis of the organization's website",
+      "required": [
+        "overall_tone",
+        "strengths",
+        "gaps",
+        "volunteer_flow_observations",
+        "donation_flow_observations"
+      ],
+      "properties": {
+        "overall_tone": {
+          "type": "string",
+          "description": "Overall tone and voice of the website"
+        },
+        "strengths": {
+          "type": "array",
+          "description": "Website strengths",
+          "items": {
+            "type": "string"
+          }
+        },
+        "gaps": {
+          "type": "array",
+          "description": "Website gaps or areas for improvement",
+          "items": {
+            "type": "string"
+          }
+        },
+        "volunteer_flow_observations": {
+          "type": "string",
+          "description": "Observations about volunteer signup or engagement flow"
+        },
+        "donation_flow_observations": {
+          "type": "string",
+          "description": "Observations about donation or contribution flow"
+        }
+      }
+    },
+    "leadership_and_staff": {
+      "type": "object",
+      "description": "Leadership and staff information",
+      "required": ["executive_leader", "other_staff_mentions"],
+      "properties": {
+        "executive_leader": {
+          "type": "object",
+          "description": "Primary executive leader",
+          "required": ["name", "role", "summary"],
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Leader's name"
+            },
+            "role": {
+              "type": "string",
+              "description": "Leader's role or title"
+            },
+            "summary": {
+              "type": "string",
+              "description": "Summary about the leader"
+            }
+          }
+        },
+        "other_staff_mentions": {
+          "type": "array",
+          "description": "Other staff members mentioned",
+          "items": {
+            "type": "object",
+            "required": ["name", "role"],
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Staff member's name"
+              },
+              "role": {
+                "type": "string",
+                "description": "Staff member's role"
+              }
+            }
+          }
+        }
+      }
+    },
+    "requester_profile": {
+      "type": "object",
+      "description": "Profile analysis of the requester",
+      "required": ["summary", "conversation_angle"],
+      "properties": {
+        "summary": {
+          "type": "string",
+          "description": "Summary of requester's background and context"
+        },
+        "conversation_angle": {
+          "type": "string",
+          "description": "Recommended conversation angle based on requester's profile"
+        }
+      }
+    },
+    "artificial_intelligence_opportunities": {
+      "type": "array",
+      "description": "Exactly three AI opportunities tailored to the organization",
+      "items": {
+        "type": "object",
+        "required": ["title", "why_it_matters", "demonstration_hook"],
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Opportunity title"
+          },
+          "why_it_matters": {
+            "type": "string",
+            "description": "Explanation of why this opportunity matters"
+          },
+          "demonstration_hook": {
+            "type": "string",
+            "description": "Hook for demonstrating this capability"
+          }
+        }
+      },
+      "minItems": 3,
+      "maxItems": 3
+    },
+    "demonstration_plan": {
+      "type": "object",
+      "description": "Plan for demonstrating the solution",
+      "required": ["opening", "steps", "example_bot_responses"],
+      "properties": {
+        "opening": {
+          "type": "string",
+          "description": "Opening statement for the demonstration"
+        },
+        "steps": {
+          "type": "array",
+          "description": "Demonstration steps (maximum 6)",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 6
+        },
+        "example_bot_responses": {
+          "type": "array",
+          "description": "Example bot responses to showcase",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "objections_and_rebuttals": {
+      "type": "array",
+      "description": "Exactly three anticipated objections with rebuttals",
+      "items": {
+        "type": "object",
+        "required": ["objection", "rebuttal"],
+        "properties": {
+          "objection": {
+            "type": "string",
+            "description": "Anticipated objection"
+          },
+          "rebuttal": {
+            "type": "string",
+            "description": "Recommended rebuttal"
+          }
+        }
+      },
+      "minItems": 3,
+      "maxItems": 3
+    },
+    "opening_script": {
+      "type": "string",
+      "maxLength": 450,
+      "description": "Opening script for the sales call (maximum 450 characters)"
+    },
+    "follow_up_emails": {
+      "type": "object",
+      "description": "Follow-up email templates",
+      "required": ["short_version", "warm_version"],
+      "properties": {
+        "short_version": {
+          "type": "object",
+          "description": "Short follow-up email (maximum 120 words)",
+          "required": ["subject", "body"],
+          "properties": {
+            "subject": {
+              "type": "string",
+              "description": "Email subject line"
+            },
+            "body": {
+              "type": "string",
+              "description": "Email body (maximum 120 words)"
+            }
+          }
+        },
+        "warm_version": {
+          "type": "object",
+          "description": "Warm follow-up email (maximum 180 words)",
+          "required": ["subject", "body"],
+          "properties": {
+            "subject": {
+              "type": "string",
+              "description": "Email subject line"
+            },
+            "body": {
+              "type": "string",
+              "description": "Email body (maximum 180 words)"
+            }
+          }
+        }
+      }
+    }
+  }
+}

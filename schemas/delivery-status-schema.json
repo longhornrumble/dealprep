@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://myrecruiter.ai/schemas/deal-prep/delivery-status-schema.json",
+  "title": "Delivery Status Schema",
+  "description": "Delivery tracking contract for idempotency and auditability (Implementation Spec §11.2)",
+  "type": "object",
+  "required": ["deliveries"],
+  "properties": {
+    "deliveries": {
+      "type": "object",
+      "description": "Status of delivery to each channel",
+      "required": ["customer_relationship_management", "email", "motion"],
+      "properties": {
+        "customer_relationship_management": {
+          "type": "object",
+          "description": "CRM delivery status",
+          "required": ["status", "attempted_at", "error"],
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": ["not_attempted", "success", "failed"],
+              "description": "Delivery status"
+            },
+            "attempted_at": {
+              "type": ["string", "null"],
+              "format": "date-time",
+              "description": "ISO-8601 timestamp when delivery was attempted, null if not attempted"
+            },
+            "error": {
+              "type": ["string", "null"],
+              "description": "Error message if delivery failed, null otherwise"
+            }
+          }
+        },
+        "email": {
+          "type": "object",
+          "description": "Email delivery status",
+          "required": ["status", "attempted_at", "error"],
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": ["not_attempted", "success", "failed"],
+              "description": "Delivery status"
+            },
+            "attempted_at": {
+              "type": ["string", "null"],
+              "format": "date-time",
+              "description": "ISO-8601 timestamp when delivery was attempted, null if not attempted"
+            },
+            "error": {
+              "type": ["string", "null"],
+              "description": "Error message if delivery failed, null otherwise"
+            }
+          }
+        },
+        "motion": {
+          "type": "object",
+          "description": "Motion task delivery status",
+          "required": ["status", "attempted_at", "error"],
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": ["not_attempted", "success", "failed"],
+              "description": "Delivery status"
+            },
+            "attempted_at": {
+              "type": ["string", "null"],
+              "format": "date-time",
+              "description": "ISO-8601 timestamp when delivery was attempted, null if not attempted"
+            },
+            "error": {
+              "type": ["string", "null"],
+              "description": "Error message if delivery failed, null otherwise"
+            }
+          }
+        }
+      }
+    }
+  }
+}

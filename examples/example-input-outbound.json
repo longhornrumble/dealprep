@@ -1,0 +1,35 @@
+{
+  "_comment": "Outbound trigger input for prospecting - partial data without linkedin_url",
+  "meta": {
+    "trigger_source": "outbound",
+    "submitted_at": "2026-01-17T09:00:00Z",
+    "run_id": "run_f9e8d7c6b5a4321098765432109876543210fedcba",
+    "requested_meeting_at": null,
+    "timezone": null
+  },
+  "organization": {
+    "name": "Greenway Environmental Alliance",
+    "website": "https://greenwayalliance.org",
+    "domain": "greenwayalliance.org"
+  },
+  "contact": {
+    "full_name": "Marcus Chen",
+    "first_name": "Marcus",
+    "last_name": "Chen",
+    "title": "Executive Director",
+    "email": "mchen@greenwayalliance.org",
+    "phone": null,
+    "linkedin_url": null
+  },
+  "notes": {
+    "comments": "Identified through nonprofit database search. Organization focuses on environmental conservation and has grown significantly in the past year. They recently posted about expanding their community outreach programs which may indicate need for better engagement tools.",
+    "intent_topic": null,
+    "source_context": "Outbound prospecting list - Q1 2026 Environmental Nonprofits"
+  },
+  "routing": {
+    "crm_target": "hubspot:company:87654321",
+    "email_to": "outbound-team@myrecruiter.ai",
+    "email_cc": [],
+    "motion_workspace": "workspace_outbound_prospecting"
+  }
+}

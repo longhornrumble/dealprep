@@ -1,0 +1,35 @@
+{
+  "name": "@myrecruiter/deal-prep-schemas",
+  "version": "1.0.0",
+  "description": "Canonical JSON schemas for Level 2 Deal Preparation system",
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./input": "./input-schema.json",
+    "./scrape-output": "./scrape-output-schema.json",
+    "./enrichment-output": "./enrichment-output-schema.json",
+    "./brief-output": "./brief-output-schema.json",
+    "./delivery-status": "./delivery-status-schema.json",
+    "./run-artifact": "./run-artifact-schema.json"
+  },
+  "scripts": {
+    "validate": "node validation-example.js",
+    "test": "echo 'No tests configured yet' && exit 0"
+  },
+  "keywords": [
+    "json-schema",
+    "deal-prep",
+    "validation",
+    "myrecruiter"
+  ],
+  "author": "Chris Miller <chris@myrecruiter.ai>",
+  "license": "PRIVATE",
+  "peerDependencies": {
+    "ajv": "^8.12.0",
+    "ajv-formats": "^2.1.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

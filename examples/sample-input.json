@@ -1,0 +1,21 @@
+{
+  "runId": "20260117_143022_abc123xyz",
+  "timestamp": "2026-01-17T14:30:22.000Z",
+  "prospect": {
+    "companyName": "Acme Corporation",
+    "companyWebsite": "https://www.acmecorp.com",
+    "contactName": "Jane Smith",
+    "contactLinkedIn": "https://www.linkedin.com/in/janesmith",
+    "contactEmail": "jane.smith@acmecorp.com"
+  },
+  "context": {
+    "dealStage": "qualification",
+    "primaryPainPoint": "Struggling with manual recruitment processes and candidate tracking",
+    "additionalNotes": "Referral from existing customer. Very interested in AI automation."
+  },
+  "metadata": {
+    "source": "hubspot_webhook",
+    "salesRepId": "rep_12345",
+    "assignedTo": "john.doe@myrecruiter.ai"
+  }
+}

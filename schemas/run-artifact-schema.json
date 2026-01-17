@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://myrecruiter.ai/schemas/deal-prep/run-artifact-schema.json",
+  "title": "Run Artifact Schema",
+  "description": "Complete run artifact tracking all stages of execution (PRD Appendix H + Implementation Spec §11.2)",
+  "type": "object",
+  "required": [
+    "run_id",
+    "trigger_source",
+    "input_payload",
+    "scrape_result",
+    "llm_output",
+    "deliveries",
+    "errors",
+    "started_at",
+    "completed_at"
+  ],
+  "properties": {
+    "run_id": {
+      "type": "string",
+      "description": "Unique identifier for this run (deterministically generated)"
+    },
+    "trigger_source": {
+      "type": "string",
+      "enum": ["inbound", "outbound"],
+      "description": "Source of the trigger that initiated this run"
+    },
+    "input_payload": {
+      "type": "string",
+      "format": "uri",
+      "description": "Storage URL of the canonical input payload"
+    },
+    "scrape_result": {
+      "type": "string",
+      "format": "uri",
+      "description": "Storage URL of the website scrape result"
+    },
+    "llm_output": {
+      "type": "string",
+      "format": "uri",
+      "description": "Storage URL of the LLM-generated Deal Preparation Brief"
+    },
+    "deliveries": {
+      "type": "object",
+      "description": "Delivery status for each channel",
+      "required": ["crm", "email", "motion"],
+      "properties": {
+        "crm": {
+          "type": "string",
+          "enum": ["success", "failed"],
+          "description": "CRM delivery outcome"
+        },
+        "email": {
+          "type": "string",
+          "enum": ["success", "failed"],
+          "description": "Email delivery outcome"
+        },
+        "motion": {
+          "type": "string",
+          "enum": ["success", "failed"],
+          "description": "Motion task delivery outcome"
+        }
+      }
+    },
+    "errors": {
+      "type": "array",
+      "description": "Errors encountered during the run",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO-8601 timestamp when the run started"
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO-8601 timestamp when the run completed"
+    }
+  }
+}

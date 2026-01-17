@@ -1,0 +1,73 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://myrecruiter.ai/schemas/deal-prep/normalized-input.schema.json",
+  "title": "NormalizedInput",
+  "description": "Canonical input structure for Deal Prep Level 2 after normalization",
+  "type": "object",
+  "required": ["runId", "timestamp", "prospect"],
+  "properties": {
+    "runId": {
+      "type": "string",
+      "description": "Unique identifier for this run (format: YYYYMMDD_HHMMSS_nanoid)",
+      "pattern": "^\\d{8}_\\d{6}_[a-zA-Z0-9_-]+$"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp of input creation"
+    },
+    "prospect": {
+      "type": "object",
+      "required": ["companyName"],
+      "properties": {
+        "companyName": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Name of the prospect company"
+        },
+        "companyWebsite": {
+          "type": "string",
+          "format": "uri",
+          "description": "Company website URL"
+        },
+        "contactName": {
+          "type": "string",
+          "description": "Primary contact person name"
+        },
+        "contactLinkedIn": {
+          "type": "string",
+          "format": "uri",
+          "description": "LinkedIn profile URL of contact"
+        },
+        "contactEmail": {
+          "type": "string",
+          "format": "email",
+          "description": "Email address of contact"
+        }
+      }
+    },
+    "context": {
+      "type": "object",
+      "properties": {
+        "dealStage": {
+          "type": "string",
+          "enum": ["prospecting", "qualification", "proposal", "negotiation", "closed"],
+          "description": "Current stage in sales pipeline"
+        },
+        "primaryPainPoint": {
+          "type": "string",
+          "description": "Known pain point or challenge"
+        },
+        "additionalNotes": {
+          "type": "string",
+          "description": "Any additional context or notes"
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional metadata for tracking and auditing",
+      "additionalProperties": true
+    }
+  }
+}

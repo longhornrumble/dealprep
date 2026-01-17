@@ -1,0 +1,173 @@
+{
+  "_comment": "Complete website scrape result for Community Partners Foundation with multiple page types, CTAs, people mentions, and some errors",
+  "scrape_meta": {
+    "started_at": "2026-01-17T14:32:05Z",
+    "completed_at": "2026-01-17T14:32:47Z",
+    "source_domain": "communitypartnersfoundation.org",
+    "tool": "Firecrawl",
+    "pages_fetched": 7
+  },
+  "pages": [
+    {
+      "url": "https://www.communitypartnersfoundation.org/",
+      "final_url": "https://www.communitypartnersfoundation.org/",
+      "page_type": "home",
+      "title": "Community Partners Foundation | Building Stronger Communities Together",
+      "extracted_markdown": "# Community Partners Foundation\n\n## Building Stronger Communities Together\n\nFor over 25 years, Community Partners Foundation has connected volunteers with meaningful opportunities to serve our neighbors. We believe that everyone has something valuable to contribute, and together we can create lasting positive change in our community.\n\n### Our Impact\n\n- **12,000+** volunteer hours logged in 2025\n- **45** active community programs\n- **200+** dedicated volunteers\n- **15,000** individuals served annually\n\n### Get Involved Today\n\nWhether you have an hour or a lifetime to give, there is a place for you at Community Partners Foundation. Join our community of changemakers and discover how your unique skills can make a difference.\n\n### Upcoming Events\n\n- **January 25, 2026**: Winter Food Drive Kickoff\n- **February 8, 2026**: Volunteer Appreciation Gala\n- **March 15, 2026**: Youth Mentorship Program Open House",
+      "ctas": [
+        "Become a Volunteer",
+        "Donate Now",
+        "Sign Up for Newsletter",
+        "View All Events"
+      ],
+      "people_mentions": []
+    },
+    {
+      "url": "https://www.communitypartnersfoundation.org/about",
+      "final_url": "https://www.communitypartnersfoundation.org/about-us",
+      "page_type": "about",
+      "title": "About Us | Community Partners Foundation",
+      "extracted_markdown": "# About Community Partners Foundation\n\n## Our Story\n\nFounded in 1999 by a group of dedicated neighbors who saw a need for better coordination of volunteer efforts in our region, Community Partners Foundation has grown from a small grassroots organization into a pillar of our community.\n\n## Our Mission\n\nTo mobilize and empower volunteers to address critical community needs through coordinated service, education, and partnership.\n\n## Our Vision\n\nA community where every person is connected, supported, and has the opportunity to thrive through the power of collective action.\n\n## Core Values\n\n- **Compassion**: We lead with empathy and understanding\n- **Collaboration**: We believe in the power of working together\n- **Accountability**: We are stewards of our community's trust\n- **Innovation**: We continuously seek better ways to serve\n- **Inclusion**: Everyone has a place in our community\n\n## Our History\n\n| Year | Milestone |\n|------|----------|\n| 1999 | Founded by five community members |\n| 2005 | Launched Youth Mentorship Program |\n| 2010 | Opened Community Resource Center |\n| 2015 | Reached 100 active volunteers |\n| 2020 | Pivoted to virtual volunteering during pandemic |\n| 2024 | Celebrated 25th anniversary |",
+      "ctas": [
+        "Join Our Team",
+        "Read Our Annual Report",
+        "Meet Our Leadership"
+      ],
+      "people_mentions": []
+    },
+    {
+      "url": "https://www.communitypartnersfoundation.org/programs",
+      "final_url": "https://www.communitypartnersfoundation.org/programs",
+      "page_type": "programs",
+      "title": "Our Programs | Community Partners Foundation",
+      "extracted_markdown": "# Our Programs\n\nCommunity Partners Foundation operates a diverse portfolio of programs designed to meet the most pressing needs in our community.\n\n## Food Security Initiative\n\nOur flagship program coordinates food distribution to families facing food insecurity. We partner with local grocery stores, restaurants, and farms to rescue food that would otherwise go to waste.\n\n- Weekly food pantry serving 200+ families\n- Mobile food truck reaching rural areas\n- School backpack program for children\n\n## Youth Mentorship Program\n\nConnecting caring adults with young people who need guidance and support. Our mentors commit to at least one hour per week for a minimum of one year.\n\n- One-on-one mentoring relationships\n- Group activities and field trips\n- Academic tutoring support\n- Career exploration workshops\n\n## Senior Companion Program\n\nCombating isolation among our elderly neighbors through regular visits, phone calls, and assistance with daily tasks.\n\n- Home visits for homebound seniors\n- Transportation to medical appointments\n- Technology assistance\n- Social events and outings\n\n## Community Garden Network\n\nManaging 12 community gardens across the county, providing fresh produce and outdoor gathering spaces.\n\n## Emergency Response Team\n\nTrained volunteers ready to assist during natural disasters and community emergencies.",
+      "ctas": [
+        "Volunteer for Food Security",
+        "Become a Mentor",
+        "Visit a Senior",
+        "Apply for Garden Plot"
+      ],
+      "people_mentions": [
+        {
+          "name": "Maria Santos",
+          "role": "Food Security Program Manager"
+        },
+        {
+          "name": "David Thompson",
+          "role": "Youth Mentorship Coordinator"
+        }
+      ]
+    },
+    {
+      "url": "https://www.communitypartnersfoundation.org/volunteer",
+      "final_url": "https://www.communitypartnersfoundation.org/volunteer",
+      "page_type": "volunteer",
+      "title": "Volunteer With Us | Community Partners Foundation",
+      "extracted_markdown": "# Volunteer With Us\n\n## Make a Difference in Your Community\n\nWe welcome volunteers of all ages, backgrounds, and skill levels. Whether you can give an hour or make a long-term commitment, we have opportunities that fit your schedule and interests.\n\n## Current Volunteer Opportunities\n\n### Food Pantry Volunteers\n**When**: Tuesdays and Thursdays, 9am-12pm\n**Commitment**: Minimum 2 hours per week\n**Skills needed**: Ability to lift 25 lbs, friendly demeanor\n\n### Youth Mentors\n**When**: Flexible scheduling with your mentee\n**Commitment**: 1 hour per week for 12 months minimum\n**Skills needed**: Background check required, patience, reliability\n\n### Senior Visitors\n**When**: Weekdays, times vary\n**Commitment**: 1-2 visits per week\n**Skills needed**: Compassion, good listener, valid driver's license preferred\n\n### Event Support\n**When**: As needed for special events\n**Commitment**: Single-day events or ongoing\n**Skills needed**: Varies by event\n\n## Volunteer Requirements\n\n1. Complete online application\n2. Attend orientation session (2 hours)\n3. Background check for youth-serving roles\n4. Program-specific training\n\n## Volunteer Benefits\n\n- Make meaningful connections\n- Develop new skills\n- Flexible scheduling\n- Recognition events\n- Reference letters available",
+      "ctas": [
+        "Apply Now",
+        "View Orientation Schedule",
+        "Download Volunteer Handbook"
+      ],
+      "people_mentions": [
+        {
+          "name": "Sarah Mitchell",
+          "role": "Director of Volunteer Services"
+        }
+      ]
+    },
+    {
+      "url": "https://www.communitypartnersfoundation.org/donate",
+      "final_url": "https://www.communitypartnersfoundation.org/donate",
+      "page_type": "donate",
+      "title": "Support Our Mission | Community Partners Foundation",
+      "extracted_markdown": "# Support Our Mission\n\n## Your Gift Makes a Difference\n\nEvery dollar you give helps us connect volunteers with those in need and strengthen our community.\n\n## Ways to Give\n\n### One-Time Donation\nMake an immediate impact with a gift of any size.\n\n### Monthly Giving\nJoin our Sustainer Circle with a recurring monthly gift. Monthly donors receive:\n- Exclusive quarterly newsletter\n- Invitation to annual donor appreciation event\n- Recognition on our donor wall\n\n### Planned Giving\nInclude Community Partners Foundation in your estate plans and leave a lasting legacy.\n\n### Corporate Partnerships\nPartner with us through sponsorships, matching gifts, and employee volunteer programs.\n\n## How Your Gift Helps\n\n- **$25** provides meals for a family for one week\n- **$50** supplies a mentor-mentee pair for one month\n- **$100** keeps the food truck running for one day\n- **$500** sponsors a senior for one year of companionship visits\n\n## Financial Transparency\n\nWe are proud of our commitment to responsible stewardship:\n- 87% of funds go directly to programs\n- 4-star Charity Navigator rating\n- Annual financial statements available upon request\n\n*Community Partners Foundation is a 501(c)(3) nonprofit organization. Donations are tax-deductible to the extent allowed by law.*",
+      "ctas": [
+        "Donate Now",
+        "Become a Monthly Donor",
+        "Contact Us About Corporate Partnership",
+        "View Annual Report"
+      ],
+      "people_mentions": [
+        {
+          "name": "Jennifer Walsh",
+          "role": "Director of Development"
+        }
+      ]
+    },
+    {
+      "url": "https://www.communitypartnersfoundation.org/staff",
+      "final_url": "https://www.communitypartnersfoundation.org/staff",
+      "page_type": "staff",
+      "title": "Our Team | Community Partners Foundation",
+      "extracted_markdown": "# Our Team\n\n## Leadership\n\n### Dr. Robert Martinez\n**Executive Director**\n\nDr. Martinez has led Community Partners Foundation since 2018, bringing over 20 years of nonprofit leadership experience. He holds a doctorate in Public Administration from State University and previously served as Deputy Director of the Regional United Way.\n\n\"Every day, I am inspired by the generosity of our volunteers and the resilience of the communities we serve.\"\n\n### Amanda Chen\n**Deputy Director**\n\nAmanda oversees daily operations and strategic planning. She joined CPF in 2015 and has been instrumental in growing our volunteer base from 75 to over 200 active volunteers.\n\n## Program Staff\n\n- **Sarah Mitchell** - Director of Volunteer Services\n- **Maria Santos** - Food Security Program Manager\n- **David Thompson** - Youth Mentorship Coordinator\n- **Patricia Green** - Senior Companion Program Lead\n- **James Wilson** - Community Garden Coordinator\n\n## Administrative Team\n\n- **Jennifer Walsh** - Director of Development\n- **Michael Brown** - Finance Manager\n- **Lisa Park** - Communications Coordinator\n\n## Board of Directors\n\nOur volunteer board of directors provides governance and strategic oversight. Board members serve three-year terms.\n\n- Thomas Richardson, Board Chair - CEO, Richardson Industries\n- Dr. Helen Chu - Professor, State University\n- Marcus Jones - Community Volunteer\n- Sandra Lopez - Attorney, Lopez & Associates\n- William O'Brien - Retired Educator",
+      "ctas": [
+        "Contact Our Team",
+        "Join Our Board"
+      ],
+      "people_mentions": [
+        {
+          "name": "Dr. Robert Martinez",
+          "role": "Executive Director"
+        },
+        {
+          "name": "Amanda Chen",
+          "role": "Deputy Director"
+        },
+        {
+          "name": "Sarah Mitchell",
+          "role": "Director of Volunteer Services"
+        },
+        {
+          "name": "Maria Santos",
+          "role": "Food Security Program Manager"
+        },
+        {
+          "name": "David Thompson",
+          "role": "Youth Mentorship Coordinator"
+        },
+        {
+          "name": "Patricia Green",
+          "role": "Senior Companion Program Lead"
+        },
+        {
+          "name": "James Wilson",
+          "role": "Community Garden Coordinator"
+        },
+        {
+          "name": "Jennifer Walsh",
+          "role": "Director of Development"
+        },
+        {
+          "name": "Michael Brown",
+          "role": "Finance Manager"
+        },
+        {
+          "name": "Lisa Park",
+          "role": "Communications Coordinator"
+        },
+        {
+          "name": "Thomas Richardson",
+          "role": "Board Chair"
+        }
+      ]
+    },
+    {
+      "url": "https://www.communitypartnersfoundation.org/contact",
+      "final_url": "https://www.communitypartnersfoundation.org/contact",
+      "page_type": "contact",
+      "title": "Contact Us | Community Partners Foundation",
+      "extracted_markdown": "# Contact Us\n\n## Get in Touch\n\nWe would love to hear from you! Whether you have questions about volunteering, want to make a donation, or are seeking assistance, our team is here to help.\n\n## Main Office\n\n**Community Partners Foundation**\n456 Main Street, Suite 200\nSpringfield, ST 12345\n\n**Phone**: (555) 123-4567\n**Email**: info@communitypartnersfoundation.org\n\n**Office Hours**:\nMonday - Friday: 9:00 AM - 5:00 PM\nSaturday: 10:00 AM - 2:00 PM (by appointment)\nSunday: Closed\n\n## Department Contacts\n\n| Department | Email | Phone |\n|------------|-------|-------|\n| Volunteer Services | volunteers@communitypartnersfoundation.org | ext. 101 |\n| Donations | giving@communitypartnersfoundation.org | ext. 102 |\n| Programs | programs@communitypartnersfoundation.org | ext. 103 |\n| Media Inquiries | media@communitypartnersfoundation.org | ext. 104 |\n\n## Community Resource Center\n\n789 Oak Avenue\nSpringfield, ST 12345\n\nOpen to the public:\nMonday - Thursday: 10:00 AM - 6:00 PM\nFriday: 10:00 AM - 4:00 PM",
+      "ctas": [
+        "Send Us a Message",
+        "Schedule a Visit",
+        "Request a Speaker"
+      ],
+      "people_mentions": []
+    }
+  ],
+  "errors": [
+    "Failed to fetch https://www.communitypartnersfoundation.org/faq - HTTP 404 Not Found",
+    "Timeout fetching https://www.communitypartnersfoundation.org/events - exceeded 30 second limit"
+  ]
+}
