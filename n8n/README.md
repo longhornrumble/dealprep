@@ -2,15 +2,24 @@
 
 This directory contains the n8n workflow JSON for the Level 2 Deal Preparation pipeline.
 
+## Production n8n Instance
+
+| Property | Value |
+|----------|-------|
+| **URL** | `https://integrate.myrecruiter.ai` |
+| **Webhook Base** | `https://integrate.myrecruiter.ai/webhook/` |
+| **Platform** | AWS EC2 (t4g.micro) |
+| **Instance** | `i-04281d9886e3a6c41` |
+
 ## Files
 
 - `deal-prep-workflow.json` - Complete n8n workflow implementing the Deal Prep pipeline
 
 ## Importing the Workflow
 
-### Method 1: n8n Web UI
+### Method 1: n8n Web UI (Recommended)
 
-1. Open your n8n instance (e.g., `http://localhost:5678`)
+1. Open the production n8n instance: `https://integrate.myrecruiter.ai`
 2. Click "Workflows" in the left sidebar
 3. Click "Add Workflow" button
 4. Click the three dots menu (top right) and select "Import from File"
@@ -27,7 +36,7 @@ n8n import:workflow --input=/path/to/deal-prep-workflow.json
 ### Method 3: REST API
 
 ```bash
-curl -X POST http://localhost:5678/api/v1/workflows \
+curl -X POST https://integrate.myrecruiter.ai/api/v1/workflows \
   -H "Content-Type: application/json" \
   -H "X-N8N-API-KEY: your-api-key" \
   -d @deal-prep-workflow.json
@@ -105,7 +114,7 @@ POST to webhook with this JSON structure:
 ### Inbound Request (via Webhook)
 
 ```bash
-curl -X POST http://localhost:5678/webhook/deal-prep \
+curl -X POST https://integrate.myrecruiter.ai/webhook/deal-prep \
   -H "Content-Type: application/json" \
   -d '{
     "organization": {

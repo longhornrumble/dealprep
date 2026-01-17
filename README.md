@@ -377,7 +377,15 @@ See `../picasso-webscraping/README.md` for full Firecrawl SDK documentation.
 
 ### n8n Integration
 
-Each module is designed to be called from n8n Code nodes. Example workflow:
+**Production n8n Instance:** `https://integrate.myrecruiter.ai`
+
+| Property | Value |
+|----------|-------|
+| URL | `https://integrate.myrecruiter.ai` |
+| Webhook Base | `https://integrate.myrecruiter.ai/webhook/` |
+| Platform | AWS EC2 (`i-04281d9886e3a6c41`) |
+
+Each module is designed to be called from n8n Code nodes. Pipeline flow:
 
 1. **Webhook Trigger** - Receive prospect data
 2. **Normalize** - Canonicalize input
@@ -389,7 +397,7 @@ Each module is designed to be called from n8n Code nodes. Example workflow:
 8. **Render** - Format for outputs
 9. **Deliver** - Send to CRM/Email/Motion
 
-See `/n8n` directory for workflow definitions (to be added).
+See `/n8n` directory for workflow JSON and import instructions.
 
 ## Type System
 
