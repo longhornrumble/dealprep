@@ -350,6 +350,31 @@ Required for production:
 - `SENDGRID_API_KEY` - (Optional) SendGrid email integration
 - `MOTION_API_KEY` - (Optional) Motion task management integration
 
+### Firecrawl Infrastructure
+
+This project leverages the Firecrawl infrastructure housed in the sibling `picasso-webscraping` repository:
+
+```
+../picasso-webscraping/
+├── src/                  # FirecrawlApp SDK (TypeScript)
+├── rag-scraper/          # RAG content preparation tools
+├── firecrawl-server/     # Self-hosted Firecrawl (Docker Compose)
+└── dist/                 # Built SDK output
+```
+
+**Options for Firecrawl usage:**
+1. **Firecrawl Cloud API** - Use `FIRECRAWL_API_KEY` with `api.firecrawl.dev`
+2. **Self-hosted** - Run `../picasso-webscraping/firecrawl-server/` locally via Docker Compose
+
+For self-hosted setup:
+```bash
+cd ../picasso-webscraping/firecrawl-server
+docker-compose up -d
+# Set FIRECRAWL_API_URL=http://localhost:3002 in .env
+```
+
+See `../picasso-webscraping/README.md` for full Firecrawl SDK documentation.
+
 ### n8n Integration
 
 Each module is designed to be called from n8n Code nodes. Example workflow:
@@ -423,13 +448,19 @@ For questions or issues, contact the development team.
 
 ---
 
-**Project Status:** Architecture defined, ready for implementation
+**Project Status:** Phase 1 Complete ✅
 
-**Next Steps:**
-1. Implement core modules (normalizer, run-manager, storage)
-2. Add Firecrawl scraper integration
-3. Implement Claude synthesizer with prompt templating
-4. Build renderers for each output format
-5. Create n8n workflow definitions
-6. Add comprehensive test coverage
-7. Deploy to production environment
+**Completed:**
+- ✅ Core modules (normalizer, run-manager, storage)
+- ✅ Firecrawl scraper integration
+- ✅ Claude Sonnet 4 synthesizer with prompt templating
+- ✅ Renderers for CRM, Email, Motion outputs
+- ✅ n8n workflow definitions
+- ✅ 375+ unit tests passing
+- ✅ Constraint validator (all 9 hard constraints from Spec §9.3)
+
+**Next Steps (Phase 1.1 - Quality & Reliability):**
+1. Integration testing with live APIs
+2. Improved extraction rules for edge cases
+3. Prompt tuning based on real outputs
+4. CRM adapter implementation (HubSpot or alternative)
