@@ -1,5 +1,5 @@
 {
-    "updatedAt": "2026-01-19T20:42:08.355Z",
+    "updatedAt": "2026-01-19T21:14:12.623Z",
     "createdAt": "2026-01-18T20:26:15.512Z",
     "id": "qRd5vZpjuYa9oujQ",
     "name": "Level 2 Deal Preparation Pipeline",
@@ -357,7 +357,7 @@
                 "bucketName": "deal-prep-artifacts",
                 "fileName": "=deal-prep/{{ $json.orgIdentifier }}/{{ $json.runId }}.html",
                 "binaryData": false,
-                "fileContent": "{{ $json.rendered_outputs.pdf_html }}",
+                "fileContent": "={{ $json.renderedOutputs.pdfHtml }}",
                 "additionalFields": {}
             },
             "type": "n8n-nodes-base.awsS3",
@@ -403,7 +403,7 @@
                         },
                         {
                             "name": "Message.Body.Text.Data",
-                            "value": "=You have new documents ready.\n\nThe AI log document can be found here:\ns3://deal-prep-artifacts/ai-ideas/{{ $('Generate Run ID').item.json.orgIdentifier }}/{{ $('Generate Run ID').item.json.runId }}.html\n\nThe deal prep document can be found here:\ns3://deal-prep-artifacts/deal-prep/{{ $('Generate Run ID').item.json.orgIdentifier }}/{{ $('Generate Run ID').item.json.runId }}.html"
+                            "value": "=You have new documents ready for {{ $('Generate Run ID').item.json.normalized.organization.name }}.\n\nAI Log Document:\nhttps://deal-prep-artifacts.s3.us-east-1.amazonaws.com/ai-ideas/{{ $('Generate Run ID').item.json.orgIdentifier }}/{{ $('Generate Run ID').item.json.runId }}.html\n\nDeal Prep Document:\nhttps://deal-prep-artifacts.s3.us-east-1.amazonaws.com/deal-prep/{{ $('Generate Run ID').item.json.orgIdentifier }}/{{ $('Generate Run ID').item.json.runId }}.html"
                         },
                         {
                             "name": "Version",
@@ -708,9 +708,9 @@
             }
         ]
     },
-    "versionId": "1ad8725c-fd20-482f-bc6f-f4ce7cbc60fc",
-    "activeVersionId": "1ad8725c-fd20-482f-bc6f-f4ce7cbc60fc",
-    "versionCounter": 243,
+    "versionId": "74ef2393-495d-401f-9742-e2ccb3e6a893",
+    "activeVersionId": "74ef2393-495d-401f-9742-e2ccb3e6a893",
+    "versionCounter": 252,
     "triggerCount": 1,
     "shared": [
         {
@@ -784,9 +784,9 @@
         }
     ],
     "activeVersion": {
-        "updatedAt": "2026-01-19T20:42:08.358Z",
-        "createdAt": "2026-01-19T20:42:08.358Z",
-        "versionId": "1ad8725c-fd20-482f-bc6f-f4ce7cbc60fc",
+        "updatedAt": "2026-01-19T21:14:12.627Z",
+        "createdAt": "2026-01-19T21:14:12.627Z",
+        "versionId": "74ef2393-495d-401f-9742-e2ccb3e6a893",
         "workflowId": "qRd5vZpjuYa9oujQ",
         "nodes": [
             {
@@ -1139,7 +1139,7 @@
                     "bucketName": "deal-prep-artifacts",
                     "fileName": "=deal-prep/{{ $json.orgIdentifier }}/{{ $json.runId }}.html",
                     "binaryData": false,
-                    "fileContent": "{{ $json.rendered_outputs.pdf_html }}",
+                    "fileContent": "={{ $json.renderedOutputs.pdfHtml }}",
                     "additionalFields": {}
                 },
                 "type": "n8n-nodes-base.awsS3",
@@ -1185,7 +1185,7 @@
                             },
                             {
                                 "name": "Message.Body.Text.Data",
-                                "value": "=You have new documents ready.\n\nThe AI log document can be found here:\ns3://deal-prep-artifacts/ai-ideas/{{ $('Generate Run ID').item.json.orgIdentifier }}/{{ $('Generate Run ID').item.json.runId }}.html\n\nThe deal prep document can be found here:\ns3://deal-prep-artifacts/deal-prep/{{ $('Generate Run ID').item.json.orgIdentifier }}/{{ $('Generate Run ID').item.json.runId }}.html"
+                                "value": "=You have new documents ready for {{ $('Generate Run ID').item.json.normalized.organization.name }}.\n\nAI Log Document:\nhttps://deal-prep-artifacts.s3.us-east-1.amazonaws.com/ai-ideas/{{ $('Generate Run ID').item.json.orgIdentifier }}/{{ $('Generate Run ID').item.json.runId }}.html\n\nDeal Prep Document:\nhttps://deal-prep-artifacts.s3.us-east-1.amazonaws.com/deal-prep/{{ $('Generate Run ID').item.json.orgIdentifier }}/{{ $('Generate Run ID').item.json.runId }}.html"
                             },
                             {
                                 "name": "Version",
@@ -1447,10 +1447,10 @@
         "autosaved": false,
         "workflowPublishHistory": [
             {
-                "createdAt": "2026-01-19T20:42:08.468Z",
-                "id": 79,
+                "createdAt": "2026-01-19T21:14:12.727Z",
+                "id": 82,
                 "workflowId": "qRd5vZpjuYa9oujQ",
-                "versionId": "1ad8725c-fd20-482f-bc6f-f4ce7cbc60fc",
+                "versionId": "74ef2393-495d-401f-9742-e2ccb3e6a893",
                 "event": "activated",
                 "userId": "ce12c374-7566-4ff4-94cd-829ad101bad3"
             }
