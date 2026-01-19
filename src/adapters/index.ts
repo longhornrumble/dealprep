@@ -17,6 +17,7 @@
  */
 
 import type { DealPrepBrief, StorageAdapter, RunId } from '../types/index.js';
+import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
 
 // ============================================================================
 // DELIVERY STATUS TYPES (Section 11.2)

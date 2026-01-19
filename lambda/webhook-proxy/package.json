@@ -1,0 +1,15 @@
+{
+  "name": "deal-prep-webhook-proxy",
+  "version": "1.0.0",
+  "description": "Lambda proxy that starts n8n EC2 on-demand and forwards webhooks",
+  "type": "module",
+  "main": "index.mjs",
+  "scripts": {
+    "package": "zip -r deployment.zip index.mjs package.json",
+    "deploy": "aws lambda update-function-code --function-name deal-prep-webhook-proxy --zip-file fileb://deployment.zip --profile chris-admin"
+  },
+  "dependencies": {
+    "@aws-sdk/client-ec2": "^3.0.0",
+    "@aws-sdk/client-sqs": "^3.0.0"
+  }
+}
