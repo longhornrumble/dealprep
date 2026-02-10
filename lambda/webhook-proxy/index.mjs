@@ -24,7 +24,6 @@ const sqs = new SQSClient({ region: 'us-east-1' });
 // Configuration
 const N8N_INSTANCE_ID = 'i-04281d9886e3a6c41';
 const N8N_URL = 'http://98.89.202.33:5678'; // n8n Elastic IP
-const N8N_WEBHOOK_PATH = '/webhook/deal-prep';
 const SQS_QUEUE_URL = 'https://sqs.us-east-1.amazonaws.com/614056832592/deal-prep-webhook-queue';
 const MAX_WAIT_TIME = 180000; // 180 seconds max wait for n8n to start (SQS has 5 min visibility)
 const POLL_INTERVAL = 5000; // Check every 5 seconds
@@ -143,8 +142,8 @@ async function ensureN8nRunning() {
 /**
  * Forward webhook to n8n
  */
-async function forwardToN8n(body) {
-  const url = `${N8N_URL}${N8N_WEBHOOK_PATH}`;
+async function forwardToN8n(body, webhookPath) {
+  const url = `${N8N_URL}${webhookPath}`;
 
   console.log('[Proxy] Forwarding request to:', url);
 
@@ -174,7 +173,7 @@ async function forwardToN8n(body) {
 /**
  * Queue message in SQS
  */
-async function queueMessage(body) {
+async function queueMessage(body, webhookPath) {
   const command = new SendMessageCommand({
     QueueUrl: SQS_QUEUE_URL,
     MessageBody: typeof body === 'string' ? body : JSON.stringify(body),
@@ -182,12 +181,16 @@ async function queueMessage(body) {
       'QueuedAt': {
         DataType: 'String',
         StringValue: new Date().toISOString()
+      },
+      'WebhookPath': {
+        DataType: 'String',
+        StringValue: webhookPath
       }
     }
   });
 
   const response = await sqs.send(command);
-  console.log('[Proxy] Message queued with ID:', response.MessageId);
+  console.log('[Proxy] Message queued with ID:', response.MessageId, 'path:', webhookPath);
   return response.MessageId;
 }
 
@@ -211,8 +214,12 @@ async function handleApiGateway(event) {
   }
 
   try {
+    // Extract webhook path from request and map to n8n webhook path
+    const requestPath = event.path || event.rawPath || '/deal-prep';
+    const webhookPath = `/webhook${requestPath}`;
+
     // Queue the message immediately
-    const messageId = await queueMessage(event.body);
+    const messageId = await queueMessage(event.body, webhookPath);
 
     // Return 202 Accepted immediately
     return {
@@ -262,8 +269,9 @@ async function handleSqs(event) {
         throw new Error(`n8n not available: ${n8nStatus.error}`);
       }
 
-      // Forward to n8n
-      const response = await forwardToN8n(record.body);
+      // Forward to n8n using the webhook path from message attributes
+      const webhookPath = record.messageAttributes?.WebhookPath?.stringValue || '/webhook/deal-prep';
+      const response = await forwardToN8n(record.body, webhookPath);
 
       console.log('[Proxy] Message processed successfully:', messageId);
       results.push({ messageId, success: true, statusCode: response.statusCode });
