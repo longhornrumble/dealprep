@@ -567,7 +567,7 @@ function buildEmailHtml(brief: CanonicalDealPrepBrief, briefUrl?: string): strin
 export function renderMotionTask(
   brief: CanonicalDealPrepBrief,
   input: CanonicalInput,
-  briefUrl?: string
+  briefUrl?: string,
 ): MotionTaskOutput {
   const startTime = Date.now();
 
@@ -761,7 +761,7 @@ export interface RenderConfig {
  */
 export function renderForCRM(
   brief: DealPrepBrief,
-  config?: RenderConfig
+  config?: RenderConfig,
 ): ModuleResult<RenderedOutput> {
   const timestamp = new Date().toISOString();
   try {
@@ -804,7 +804,7 @@ export function renderForCRM(
  */
 export function renderForEmail(
   brief: DealPrepBrief,
-  config?: RenderConfig & { recipientName?: string }
+  config?: RenderConfig & { recipientName?: string },
 ): ModuleResult<RenderedOutput> {
   const timestamp = new Date().toISOString();
   try {
@@ -847,7 +847,7 @@ export function renderForEmail(
  */
 export function renderForMotion(
   brief: DealPrepBrief,
-  config?: RenderConfig & { dueDate?: string; assignee?: string }
+  config?: RenderConfig & { dueDate?: string; assignee?: string },
 ): ModuleResult<RenderedOutput> {
   const timestamp = new Date().toISOString();
   try {
@@ -890,7 +890,7 @@ export function renderForMotion(
  */
 export function renderAsMarkdown(
   brief: DealPrepBrief,
-  config?: RenderConfig
+  config?: RenderConfig,
 ): ModuleResult<RenderedOutput> {
   return renderForCRM(brief, config);
 }
@@ -901,7 +901,7 @@ export function renderAsMarkdown(
  */
 export function renderAsPlainText(
   brief: DealPrepBrief,
-  config?: RenderConfig
+  config?: RenderConfig,
 ): ModuleResult<RenderedOutput> {
   const timestamp = new Date().toISOString();
   try {
@@ -943,7 +943,7 @@ export function renderAsPlainText(
  */
 export function renderAsJSON(
   brief: DealPrepBrief,
-  config?: RenderConfig & { pretty?: boolean }
+  config?: RenderConfig & { pretty?: boolean },
 ): ModuleResult<RenderedOutput> {
   const timestamp = new Date().toISOString();
   try {
@@ -1007,7 +1007,9 @@ function buildLegacyCRMMarkdown(brief: DealPrepBrief, config?: RenderConfig): st
     lines.push('## Contact');
     lines.push('');
     lines.push(`- **Name:** ${brief.contact.name}`);
-    if (brief.contact.title) lines.push(`- **Title:** ${brief.contact.title}`);
+    if (brief.contact.title) {
+lines.push(`- **Title:** ${brief.contact.title}`);
+}
     if (brief.contact.background) {
       lines.push('');
       lines.push(brief.contact.background);

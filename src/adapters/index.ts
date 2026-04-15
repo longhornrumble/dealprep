@@ -696,7 +696,7 @@ async function executeCRMDelivery(
   input: CanonicalInput,
   rendered: CRMNoteOutput,
   crmAdapter: CRMAdapter,
-  logger: Logger
+  logger: Logger,
 ): Promise<DeliveryChannelStatus> {
   const attemptedAt = new Date().toISOString();
 
@@ -796,7 +796,7 @@ async function executeEmailDelivery(
   input: CanonicalInput,
   rendered: EmailOutput,
   emailAdapter: EmailAdapter,
-  logger: Logger
+  logger: Logger,
 ): Promise<DeliveryChannelStatus> {
   const attemptedAt = new Date().toISOString();
 
@@ -862,7 +862,7 @@ async function executeMotionDelivery(
   input: CanonicalInput,
   rendered: MotionTaskOutput,
   motionAdapter: MotionAdapter,
-  logger: Logger
+  logger: Logger,
 ): Promise<DeliveryChannelStatus> {
   const attemptedAt = new Date().toISOString();
 
@@ -942,7 +942,7 @@ export async function executeDeliveries(
   rendered: RenderedOutputs,
   adapters: AdaptersConfig,
   storage: StorageAdapter,
-  logger: Logger = defaultLogger
+  logger: Logger = defaultLogger,
 ): Promise<DeliveryStatus> {
   logger.info('Starting delivery orchestration', { runId });
 
@@ -1019,10 +1019,9 @@ export async function executeDeliveries(
  */
 export function createAdaptersFromEnv(logger: Logger = defaultLogger): AdaptersConfig {
   // CRM Adapter
-  let crmAdapter: CRMAdapter;
   // For now, we only have NullCRMAdapter
   // Future: check CRM_PROVIDER, HUBSPOT_API_KEY, SALESFORCE_TOKEN, etc.
-  crmAdapter = new NullCRMAdapter(logger);
+  const crmAdapter: CRMAdapter = new NullCRMAdapter(logger);
 
   // Email Adapter
   let emailAdapter: EmailAdapter;
@@ -1038,7 +1037,7 @@ export function createAdaptersFromEnv(logger: Logger = defaultLogger): AdaptersC
         fromEmail,
         fromName,
       },
-      logger
+      logger,
     );
   } else {
     emailAdapter = new NullEmailAdapter(logger);
@@ -1055,7 +1054,7 @@ export function createAdaptersFromEnv(logger: Logger = defaultLogger): AdaptersC
         apiKey: motionApiKey,
         workspaceId: motionWorkspaceId,
       },
-      logger
+      logger,
     );
   } else {
     motionAdapter = new NullMotionAdapter(logger);
@@ -1092,7 +1091,7 @@ export interface DeliveryMetrics {
 export function calculateDeliveryMetrics(
   runId: string,
   status: DeliveryStatus,
-  startTime: number
+  startTime: number,
 ): DeliveryMetrics {
   const statuses = [
     status.deliveries.customer_relationship_management.status,

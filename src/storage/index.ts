@@ -174,7 +174,7 @@ export class S3StorageAdapter implements StorageAdapter {
     runId: RunId,
     artifactType: string,
     content: string | Buffer,
-    metadata?: Record<string, unknown>
+    metadata?: Record<string, unknown>,
   ): Promise<ArtifactMetadata> {
     const key = this.getKey(runId, artifactType);
     const now = new Date().toISOString();
@@ -234,7 +234,7 @@ export class S3StorageAdapter implements StorageAdapter {
    */
   async load(
     runId: RunId,
-    artifactType: string
+    artifactType: string,
   ): Promise<{ content: string | Buffer; metadata: ArtifactMetadata }> {
     const key = this.getKey(runId, artifactType);
 
@@ -404,7 +404,7 @@ export class MemoryStorageAdapter implements StorageAdapter {
     runId: RunId,
     artifactType: string,
     content: string | Buffer,
-    metadata?: Record<string, unknown>
+    metadata?: Record<string, unknown>,
   ): Promise<ArtifactMetadata> {
     const key = this.getKey(runId, artifactType);
     const now = new Date().toISOString();
@@ -437,7 +437,7 @@ export class MemoryStorageAdapter implements StorageAdapter {
    */
   async load(
     runId: RunId,
-    artifactType: string
+    artifactType: string,
   ): Promise<{ content: string | Buffer; metadata: ArtifactMetadata }> {
     const key = this.getKey(runId, artifactType);
     const item = this.store.get(key);
@@ -534,7 +534,7 @@ export class MemoryStorageAdapter implements StorageAdapter {
  * @returns Storage adapter instance
  */
 export function createStorageAdapter(
-  config: S3Config | { type: 'memory' }
+  config: S3Config | { type: 'memory' },
 ): StorageAdapter {
   if ('type' in config && config.type === 'memory') {
     return new MemoryStorageAdapter();

@@ -262,7 +262,7 @@ const PAGE_TYPE_KEYWORDS: Record<PageType, string[]> = {
 export function classifyPageType(
   url: string,
   title: string | null,
-  markdown: string
+  markdown: string,
 ): PageType {
   const parsedUrl = new URL(url);
   const pathname = parsedUrl.pathname.toLowerCase();
@@ -272,7 +272,9 @@ export function classifyPageType(
     PageType,
     RegExp[]
   ][]) {
-    if (pageType === 'other') continue;
+    if (pageType === 'other') {
+continue;
+}
     for (const pattern of patterns) {
       if (pattern.test(pathname)) {
         return pageType;
@@ -292,7 +294,9 @@ export function classifyPageType(
     PageType,
     string[]
   ][]) {
-    if (pageType === 'other') continue;
+    if (pageType === 'other') {
+continue;
+}
     for (const keyword of keywords) {
       if (searchText.includes(keyword)) {
         return pageType;
@@ -346,7 +350,9 @@ export function extractCTAs(markdown: string): string[] {
   const linkMatches = markdown.matchAll(linkPattern);
   for (const match of linkMatches) {
     const linkTextRaw = match[1];
-    if (!linkTextRaw) continue;
+    if (!linkTextRaw) {
+continue;
+}
     const linkText = linkTextRaw.toLowerCase();
     const actionWords = [
       'donate',
@@ -382,11 +388,11 @@ export function extractCTAs(markdown: string): string[] {
  */
 const ROLE_PATTERNS: RegExp[] = [
   // Title patterns like "Name, Title" or "Name - Title"
-  /^([A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,3})\s*[,\-]\s*([A-Za-z\s]+(?:Director|Manager|CEO|CFO|COO|President|Vice President|VP|Executive|Officer|Founder|Co-Founder|Chair|Chairman|Chairwoman|Coordinator|Specialist|Lead|Head|Chief|Administrator|Supervisor)(?:\s+of\s+[A-Za-z\s]+)?)/gm,
+  /^([A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,3})\s*[,-]\s*([A-Za-z\s]+(?:Director|Manager|CEO|CFO|COO|President|Vice President|VP|Executive|Officer|Founder|Co-Founder|Chair|Chairman|Chairwoman|Coordinator|Specialist|Lead|Head|Chief|Administrator|Supervisor)(?:\s+of\s+[A-Za-z\s]+)?)/gm,
   // Patterns like "Title: Name" or "Title - Name"
-  /(?:^|\n)\s*([A-Za-z\s]+(?:Director|Manager|CEO|CFO|COO|President|Vice President|VP|Executive|Officer|Founder|Co-Founder|Chair|Chairman|Chairwoman|Coordinator|Specialist|Lead|Head|Chief|Administrator|Supervisor)(?:\s+of\s+[A-Za-z\s]+)?)\s*[:\-]\s*([A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,3})/gm,
+  /(?:^|\n)\s*([A-Za-z\s]+(?:Director|Manager|CEO|CFO|COO|President|Vice President|VP|Executive|Officer|Founder|Co-Founder|Chair|Chairman|Chairwoman|Coordinator|Specialist|Lead|Head|Chief|Administrator|Supervisor)(?:\s+of\s+[A-Za-z\s]+)?)\s*[:-]\s*([A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,3})/gm,
   // Markdown bold names followed by role
-  /\*\*([A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,3})\*\*\s*[,\-]?\s*([A-Za-z\s]+(?:Director|Manager|CEO|CFO|COO|President|Vice President|VP|Executive|Officer|Founder|Co-Founder|Chair|Chairman|Chairwoman|Coordinator|Specialist|Lead|Head|Chief|Administrator|Supervisor)(?:\s+of\s+[A-Za-z\s]+)?)/gm,
+  /\*\*([A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,3})\*\*\s*[,-]?\s*([A-Za-z\s]+(?:Director|Manager|CEO|CFO|COO|President|Vice President|VP|Executive|Officer|Founder|Co-Founder|Chair|Chairman|Chairwoman|Coordinator|Specialist|Lead|Head|Chief|Administrator|Supervisor)(?:\s+of\s+[A-Za-z\s]+)?)/gm,
 ];
 
 /**
@@ -398,7 +404,7 @@ const NAME_ONLY_PATTERNS: RegExp[] = [
   // Bold names
   /\*\*([A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,3})\*\*/g,
   // Names in list items (staff lists)
-  /^[\-\*]\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,3})\s*$/gm,
+  /^[-*]\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,3})\s*$/gm,
 ];
 
 /**
@@ -480,7 +486,7 @@ function isLikelyPersonName(name: string): boolean {
  */
 export function extractPeopleMentions(
   markdown: string,
-  pageType: PageType
+  pageType: PageType,
 ): PersonMention[] {
   const mentions: Map<string, PersonMention> = new Map();
 
@@ -519,7 +525,9 @@ export function extractPeopleMentions(
       const matches = markdown.matchAll(pattern);
       for (const match of matches) {
         const nameMatch = match[1];
-        if (!nameMatch) continue;
+        if (!nameMatch) {
+continue;
+}
         const name = nameMatch.trim();
         if (isLikelyPersonName(name) && !mentions.has(name)) {
           mentions.set(name, { name, role: null });
@@ -544,7 +552,7 @@ export function extractDomain(url: string): string {
     return parsed.hostname;
   } catch {
     // Try to extract domain from malformed URL
-    const match = url.match(/(?:https?:\/\/)?([^\/]+)/);
+    const match = url.match(/(?:https?:\/\/)?([^/]+)/);
     return match?.[1] ?? url;
   }
 }
@@ -598,7 +606,7 @@ async function withRetry<T>(
   fn: () => Promise<T>,
   maxRetries: number,
   logger: Logger,
-  context: string
+  context: string,
 ): Promise<T> {
   let lastError: Error | null = null;
 
@@ -689,7 +697,7 @@ function createFirecrawlClient(config: ResolvedConfig): AxiosInstance {
 async function mapWebsite(
   client: AxiosInstance,
   url: string,
-  logger: Logger
+  logger: Logger,
 ): Promise<string[]> {
   logger.debug('Mapping website URLs', { url });
 
@@ -713,7 +721,7 @@ async function mapWebsite(
 async function scrapeUrl(
   client: AxiosInstance,
   url: string,
-  logger: Logger
+  logger: Logger,
 ): Promise<FirecrawlScrapeResponse['data']> {
   logger.debug('Scraping URL', { url });
 
@@ -739,7 +747,7 @@ async function startCrawl(
   url: string,
   maxPages: number,
   maxDepth: number,
-  logger: Logger
+  logger: Logger,
 ): Promise<string> {
   logger.debug('Starting crawl', { url, maxPages, maxDepth });
 
@@ -769,7 +777,7 @@ async function startCrawl(
 async function checkCrawlStatus(
   client: AxiosInstance,
   crawlId: string,
-  logger: Logger
+  logger: Logger,
 ): Promise<FirecrawlCrawlStatusResponse> {
   logger.debug('Checking crawl status', { crawlId });
 
@@ -790,7 +798,7 @@ async function waitForCrawl(
   crawlId: string,
   logger: Logger,
   metrics: Metrics,
-  pollIntervalMs: number = 2000
+  pollIntervalMs: number = 2000,
 ): Promise<FirecrawlCrawlStatusResponse['data']> {
   const startTime = Date.now();
   let status: FirecrawlCrawlStatusResponse;
@@ -842,7 +850,7 @@ export async function scrapeWebsite(
   url: string,
   config: ScraperConfig = {},
   logger: Logger = defaultLogger,
-  metrics: Metrics = defaultMetrics
+  metrics: Metrics = defaultMetrics,
 ): Promise<ScrapeOutput> {
   const startTime = Date.now();
   const startedAt = new Date().toISOString();
@@ -886,7 +894,7 @@ export async function scrapeWebsite(
       () => startCrawl(client, url, resolvedConfig.maxPages, resolvedConfig.maxDepth, logger),
       resolvedConfig.maxRetries,
       logger,
-      'Start crawl'
+      'Start crawl',
     );
 
     const crawlData = await waitForCrawl(client, crawlId, logger, metrics);
@@ -944,7 +952,7 @@ export async function scrapeWebsite(
         () => mapWebsite(client, url, logger),
         resolvedConfig.maxRetries,
         logger,
-        'Map website'
+        'Map website',
       );
 
       logger.info('Website mapped', { urlCount: mappedUrls.length });
@@ -966,7 +974,7 @@ export async function scrapeWebsite(
             () => scrapeUrl(client, pageUrl, logger),
             resolvedConfig.maxRetries,
             logger,
-            `Scrape ${pageUrl}`
+            `Scrape ${pageUrl}`,
           );
 
           if (pageData && pageData.markdown) {
@@ -975,7 +983,7 @@ export async function scrapeWebsite(
             const pageType = classifyPageType(
               pageUrl,
               pageData.metadata?.title || null,
-              pageData.markdown
+              pageData.markdown,
             );
             const ctas = extractCTAs(pageData.markdown);
             const peopleMentions = extractPeopleMentions(pageData.markdown, pageType);
@@ -1066,7 +1074,7 @@ export async function crawlWebsite(
   runId: RunId,
   storage: StorageAdapter,
   config: FirecrawlConfig,
-  options?: ScrapeOptions & { maxPages?: number }
+  options?: ScrapeOptions & { maxPages?: number },
 ): Promise<ModuleResult<ScrapeOutput>> {
   const startTime = Date.now();
 
@@ -1074,11 +1082,21 @@ export async function crawlWebsite(
     const scraperConfig: ScraperConfig = {
       apiKey: config.apiKey,
     };
-    if (config.apiUrl) scraperConfig.apiUrl = config.apiUrl;
-    if (config.timeout) scraperConfig.timeout = config.timeout;
-    if (config.maxRetries) scraperConfig.maxRetries = config.maxRetries;
-    if (options?.maxPages) scraperConfig.maxPages = options.maxPages;
-    if (options?.maxDepth) scraperConfig.maxDepth = options.maxDepth;
+    if (config.apiUrl) {
+scraperConfig.apiUrl = config.apiUrl;
+}
+    if (config.timeout) {
+scraperConfig.timeout = config.timeout;
+}
+    if (config.maxRetries) {
+scraperConfig.maxRetries = config.maxRetries;
+}
+    if (options?.maxPages) {
+scraperConfig.maxPages = options.maxPages;
+}
+    if (options?.maxDepth) {
+scraperConfig.maxDepth = options.maxDepth;
+}
 
     const result = await scrapeWebsite(url, scraperConfig);
 

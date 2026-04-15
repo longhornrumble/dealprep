@@ -13,6 +13,17 @@ export default [
         sourceType: 'module',
         project: './tsconfig.json',
       },
+      globals: {
+        console: 'readonly',
+        process: 'readonly',
+        Buffer: 'readonly',
+        URL: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+        fetch: 'readonly',
+        AbortSignal: 'readonly',
+        AbortController: 'readonly',
+      },
     },
     plugins: {
       '@typescript-eslint': tseslint,
@@ -27,6 +38,9 @@ export default [
         varsIgnorePattern: '^_',
       }],
       '@typescript-eslint/no-non-null-assertion': 'warn',
+
+      // Disable base rule in favor of @typescript-eslint version
+      'no-unused-vars': 'off',
 
       // General rules
       'no-console': ['warn', { allow: ['warn', 'error'] }],

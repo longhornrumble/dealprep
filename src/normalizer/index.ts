@@ -67,7 +67,7 @@ const RawInputSchema = z.object({
     trigger_source: z.enum(['inbound', 'outbound']),
     submitted_at: z.string().refine(
       (val) => !isNaN(Date.parse(val)),
-      { message: 'submitted_at must be a valid ISO-8601 timestamp' }
+      { message: 'submitted_at must be a valid ISO-8601 timestamp' },
     ),
     run_id: z.string().optional(),
     requested_meeting_at: z.string().nullable().optional(),
@@ -218,7 +218,7 @@ function validateOrganizationRequirement(org: CanonicalInput['organization']): b
  */
 export function normalize(
   rawInput: unknown,
-  _config?: NormalizerConfig
+  _config?: NormalizerConfig,
 ): ModuleResult<CanonicalInput> {
   const startTime = Date.now();
   const timestamp = new Date().toISOString();
@@ -353,7 +353,7 @@ export function normalize(
  * @returns ModuleResult containing validation status and any errors
  */
 export function validateInput(
-  input: CanonicalInput
+  input: CanonicalInput,
 ): ModuleResult<{ valid: boolean; errors: string[] }> {
   const startTime = Date.now();
   const timestamp = new Date().toISOString();

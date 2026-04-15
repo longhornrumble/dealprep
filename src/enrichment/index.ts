@@ -222,7 +222,7 @@ export class LLMEnrichmentProvider implements EnrichmentProvider {
       modelId: string;
       timeout?: number;
     },
-    private readonly logger: EnrichmentLogger = defaultLogger
+    private readonly logger: EnrichmentLogger = defaultLogger,
   ) {
     this.apiKey = config.apiKey;
     this.apiUrl = config.apiUrl;
@@ -268,7 +268,7 @@ export class APIEnrichmentProvider implements EnrichmentProvider {
       apiUrl: string;
       timeout?: number;
     },
-    private readonly logger: EnrichmentLogger = defaultLogger
+    private readonly logger: EnrichmentLogger = defaultLogger,
   ) {
     this.apiKey = config.apiKey;
     this.apiUrl = config.apiUrl;
@@ -307,7 +307,7 @@ export class APIEnrichmentProvider implements EnrichmentProvider {
  */
 export function getEnrichmentProvider(
   config?: EnrichmentProviderConfig,
-  logger: EnrichmentLogger = defaultLogger
+  logger: EnrichmentLogger = defaultLogger,
 ): EnrichmentProvider {
   if (!config) {
     logger.debug('No provider config provided, using NullEnrichmentProvider');
@@ -385,7 +385,7 @@ export function isValidLinkedInUrl(url: string): boolean {
 export async function summarizeLinkedIn(
   url: string,
   config: EnrichmentConfig,
-  logger: EnrichmentLogger = defaultLogger
+  logger: EnrichmentLogger = defaultLogger,
 ): Promise<ProfileSummary> {
   logger.info('Summarizing LinkedIn profile', { url });
 
@@ -446,7 +446,7 @@ function createNotFoundOutput(errors: string[] = []): EnrichmentOutput {
 export async function enrichPerson(
   input: CanonicalInput,
   config: EnrichmentConfig = {},
-  observability: { logger?: EnrichmentLogger; metrics?: EnrichmentMetrics } = {}
+  observability: { logger?: EnrichmentLogger; metrics?: EnrichmentMetrics } = {},
 ): Promise<EnrichmentOutput> {
   const logger = observability.logger ?? defaultLogger;
   const metrics = observability.metrics ?? defaultMetrics;
@@ -457,7 +457,7 @@ export async function enrichPerson(
 
   logger.info('Starting person enrichment', {
     runId,
-    hasLinkedInUrl: !!linkedinUrl
+    hasLinkedInUrl: !!linkedinUrl,
   });
   metrics.incrementCounter('enrichment.started', { runId });
 
@@ -491,16 +491,16 @@ export async function enrichPerson(
       logger.info('Person enrichment completed successfully', {
         runId,
         confidence: summary.confidence,
-        attempt
+        attempt,
       });
       metrics.incrementCounter('enrichment.success', {
         runId,
-        confidence: summary.confidence
+        confidence: summary.confidence,
       });
       metrics.recordDuration('enrichment.duration_ms', Date.now() - startTime, {
         runId,
         result: 'success',
-        attempt: String(attempt)
+        attempt: String(attempt),
       });
 
       return {
@@ -516,7 +516,7 @@ export async function enrichPerson(
         runId,
         attempt,
         error: lastError.message,
-        stack: lastError.stack
+        stack: lastError.stack,
       });
       metrics.incrementCounter('enrichment.error', { runId, attempt: String(attempt) });
 
@@ -529,12 +529,12 @@ export async function enrichPerson(
   logger.warn('All enrichment attempts failed, returning not found', {
     runId,
     totalAttempts: maxRetries + 1,
-    errors
+    errors,
   });
   metrics.incrementCounter('enrichment.failed', { runId });
   metrics.recordDuration('enrichment.duration_ms', Date.now() - startTime, {
     runId,
-    result: 'failed'
+    result: 'failed',
   });
 
   return createNotFoundOutput(errors);

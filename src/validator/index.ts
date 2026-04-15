@@ -240,7 +240,7 @@ function isValidUrl(url: string): boolean {
 export function validateArrayLength(
   arr: unknown,
   expected: number,
-  fieldPath: string
+  fieldPath: string,
 ): ValidationError | null {
   if (!Array.isArray(arr)) {
     return {
@@ -271,7 +271,7 @@ export function validateArrayLength(
 export function validateMaxLength(
   str: unknown,
   maxChars: number,
-  fieldPath: string
+  fieldPath: string,
 ): ValidationError | null {
   if (typeof str !== 'string') {
     return {
@@ -302,7 +302,7 @@ export function validateMaxLength(
 export function validateMaxWords(
   str: unknown,
   maxWords: number,
-  fieldPath: string
+  fieldPath: string,
 ): ValidationError | null {
   if (typeof str !== 'string') {
     return {
@@ -334,7 +334,7 @@ export function validateMaxWords(
 export function validateMaxItems(
   arr: unknown,
   maxItems: number,
-  fieldPath: string
+  fieldPath: string,
 ): ValidationError | null {
   if (!Array.isArray(arr)) {
     return {
@@ -365,7 +365,7 @@ export function validateMaxItems(
  */
 export function validateNotFoundFields(
   brief: CanonicalDealPrepBrief,
-  config: ValidatorConfig = {}
+  config: ValidatorConfig = {},
 ): ValidationError[] {
   const errors: ValidationError[] = [];
   const marker = config.notFoundMarker ?? DEFAULT_CONFIG.notFoundMarker;
@@ -410,7 +410,7 @@ export function validateNotFoundFields(
  * Validate meta.source_urls is populated and contains valid URLs
  */
 export function validateSourceUrls(
-  brief: CanonicalDealPrepBrief
+  brief: CanonicalDealPrepBrief,
 ): ValidationError[] {
   const errors: ValidationError[] = [];
   const sourceUrls = brief.meta?.source_urls;
@@ -491,7 +491,7 @@ export function validateSourceUrls(
  */
 export function validateBrief(
   brief: CanonicalDealPrepBrief,
-  config: ValidatorConfig = {}
+  config: ValidatorConfig = {},
 ): ValidationResult {
   const errors: ValidationError[] = [];
   const mergedConfig = { ...DEFAULT_CONFIG, ...config };
@@ -520,65 +520,81 @@ export function validateBrief(
   const topOppsError = validateArrayLength(
     brief.executive_summary?.top_opportunities,
     CONSTRAINTS.TOP_OPPORTUNITIES_COUNT,
-    'executive_summary.top_opportunities'
+    'executive_summary.top_opportunities',
   );
-  if (topOppsError) errors.push(topOppsError);
+  if (topOppsError) {
+errors.push(topOppsError);
+}
 
   // 2. artificial_intelligence_opportunities = exactly 3 items
   const aiOppsError = validateArrayLength(
     brief.artificial_intelligence_opportunities,
     CONSTRAINTS.AI_OPPORTUNITIES_COUNT,
-    'artificial_intelligence_opportunities'
+    'artificial_intelligence_opportunities',
   );
-  if (aiOppsError) errors.push(aiOppsError);
+  if (aiOppsError) {
+errors.push(aiOppsError);
+}
 
   // 3. objections_and_rebuttals = exactly 3 items
   const objectionsError = validateArrayLength(
     brief.objections_and_rebuttals,
     CONSTRAINTS.OBJECTIONS_REBUTTALS_COUNT,
-    'objections_and_rebuttals'
+    'objections_and_rebuttals',
   );
-  if (objectionsError) errors.push(objectionsError);
+  if (objectionsError) {
+errors.push(objectionsError);
+}
 
   // 4. executive_summary.summary <= 600 characters
   const summaryError = validateMaxLength(
     brief.executive_summary?.summary,
     CONSTRAINTS.EXECUTIVE_SUMMARY_MAX_CHARS,
-    'executive_summary.summary'
+    'executive_summary.summary',
   );
-  if (summaryError) errors.push(summaryError);
+  if (summaryError) {
+errors.push(summaryError);
+}
 
   // 5. opening_script <= 450 characters
   const scriptError = validateMaxLength(
     brief.opening_script,
     CONSTRAINTS.OPENING_SCRIPT_MAX_CHARS,
-    'opening_script'
+    'opening_script',
   );
-  if (scriptError) errors.push(scriptError);
+  if (scriptError) {
+errors.push(scriptError);
+}
 
   // 6. demonstration_plan.steps <= 6 items
   const stepsError = validateMaxItems(
     brief.demonstration_plan?.steps,
     CONSTRAINTS.DEMONSTRATION_STEPS_MAX,
-    'demonstration_plan.steps'
+    'demonstration_plan.steps',
   );
-  if (stepsError) errors.push(stepsError);
+  if (stepsError) {
+errors.push(stepsError);
+}
 
   // 7. follow_up_emails.short_version.body <= 120 words
   const shortEmailError = validateMaxWords(
     brief.follow_up_emails?.short_version?.body,
     CONSTRAINTS.SHORT_EMAIL_BODY_MAX_WORDS,
-    'follow_up_emails.short_version.body'
+    'follow_up_emails.short_version.body',
   );
-  if (shortEmailError) errors.push(shortEmailError);
+  if (shortEmailError) {
+errors.push(shortEmailError);
+}
 
   // 8. follow_up_emails.warm_version.body <= 180 words
   const warmEmailError = validateMaxWords(
     brief.follow_up_emails?.warm_version?.body,
     CONSTRAINTS.WARM_EMAIL_BODY_MAX_WORDS,
-    'follow_up_emails.warm_version.body'
+    'follow_up_emails.warm_version.body',
   );
-  if (warmEmailError) errors.push(warmEmailError);
+  if (warmEmailError) {
+errors.push(warmEmailError);
+}
 
   // 9. Missing information must be explicitly "Not found"
   const notFoundErrors = validateNotFoundFields(brief, mergedConfig);
@@ -641,7 +657,7 @@ export interface LegacyValidationResult {
  */
 export function validateLegacyBrief(
   brief: DealPrepBrief,
-  _config?: ValidationConfig
+  _config?: ValidationConfig,
 ): ModuleResult<LegacyValidationResult> {
   const errors: Array<{ field: string; message: string; severity: 'error' | 'warning' }> = [];
   const warnings: Array<{ field: string; message: string }> = [];
@@ -680,7 +696,7 @@ export function validateLegacyBrief(
  */
 export function validateInput(
   input: unknown,
-  _config?: ValidationConfig
+  _config?: ValidationConfig,
 ): ModuleResult<LegacyValidationResult> {
   const errors: Array<{ field: string; message: string; severity: 'error' | 'warning' }> = [];
   const warnings: Array<{ field: string; message: string }> = [];
@@ -725,7 +741,7 @@ export function validateInput(
  * Check for required fields in brief
  */
 export function checkRequiredFields(
-  brief: DealPrepBrief
+  brief: DealPrepBrief,
 ): ModuleResult<{ missing: string[]; present: string[] }> {
   const requiredFields = [
     'runId',
@@ -765,7 +781,7 @@ export function checkRequiredFields(
  * Quality checks for generated content
  */
 export function checkContentQuality(
-  brief: DealPrepBrief
+  brief: DealPrepBrief,
 ): ModuleResult<{
   score: number;
   issues: Array<{ field: string; issue: string; severity: 'error' | 'warning' }>;
@@ -842,7 +858,7 @@ export function checkContentQuality(
  */
 export function applyCustomRules(
   data: unknown,
-  rules: ValidationRule[]
+  rules: ValidationRule[],
 ): ModuleResult<LegacyValidationResult> {
   const errors: Array<{ field: string; message: string; severity: 'error' | 'warning' }> = [];
   const warnings: Array<{ field: string; message: string }> = [];

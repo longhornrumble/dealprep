@@ -134,7 +134,7 @@ export function generateRunId(input: CanonicalInput): RunId {
   // Step 2: Round submitted_at based on trigger source
   const roundedTimestamp = roundTimestamp(
     input.meta.submitted_at,
-    input.meta.trigger_source
+    input.meta.trigger_source,
   );
 
   // Step 3: Construct input string with pipe separator
@@ -166,7 +166,7 @@ export function generateRunIdFull(input: CanonicalInput): RunId {
 
   const roundedTimestamp = roundTimestamp(
     input.meta.submitted_at,
-    input.meta.trigger_source
+    input.meta.trigger_source,
   );
 
   const hashInput = [
@@ -255,7 +255,7 @@ function createRunArtifact(runId: RunId, input: CanonicalInput): RunArtifact {
  */
 export async function checkIdempotency(
   input: CanonicalInput,
-  storage?: StorageAdapter
+  storage?: StorageAdapter,
 ): Promise<ModuleResult<{ exists: boolean; existingRunId?: RunId; runArtifact?: RunArtifact }>> {
   const startTime = Date.now();
   const timestamp = new Date().toISOString();
@@ -331,7 +331,7 @@ export async function checkIdempotency(
  */
 export async function createRun(
   input: CanonicalInput,
-  storage?: StorageAdapter
+  storage?: StorageAdapter,
 ): Promise<ModuleResult<RunMetadata>> {
   const startTime = Date.now();
   const timestamp = new Date().toISOString();
@@ -418,7 +418,7 @@ export async function createRun(
       runId,
       'run_artifact',
       JSON.stringify(runArtifact, null, 2),
-      { contentType: 'application/json' }
+      { contentType: 'application/json' },
     );
 
     // Save input artifact
@@ -426,7 +426,7 @@ export async function createRun(
       runId,
       'input',
       JSON.stringify(input, null, 2),
-      { contentType: 'application/json' }
+      { contentType: 'application/json' },
     );
 
     // Update run artifact to mark input as saved
@@ -436,7 +436,7 @@ export async function createRun(
       runId,
       'run_artifact',
       JSON.stringify(runArtifact, null, 2),
-      { contentType: 'application/json' }
+      { contentType: 'application/json' },
     );
 
     return {
@@ -487,7 +487,7 @@ export async function updateRunStatus(
   runId: RunId,
   status: RunStatus,
   error?: string,
-  storage?: StorageAdapter
+  storage?: StorageAdapter,
 ): Promise<ModuleResult<RunMetadata>> {
   const startTime = Date.now();
   const timestamp = new Date().toISOString();
@@ -514,7 +514,7 @@ export async function updateRunStatus(
       runId,
       'run_artifact',
       JSON.stringify(runArtifact, null, 2),
-      { contentType: 'application/json' }
+      { contentType: 'application/json' },
     );
 
     const resultData: RunMetadata = {
@@ -567,7 +567,7 @@ export async function updateRunStatus(
  */
 export async function getRunMetadata(
   runId: RunId,
-  storage?: StorageAdapter
+  storage?: StorageAdapter,
 ): Promise<ModuleResult<RunMetadata>> {
   const startTime = Date.now();
   const timestamp = new Date().toISOString();
@@ -629,7 +629,7 @@ export async function getRunMetadata(
 export async function markArtifactComplete(
   runId: RunId,
   artifactType: 'input' | 'scrape' | 'enrichment' | 'brief' | 'run_artifact',
-  storage?: StorageAdapter
+  storage?: StorageAdapter,
 ): Promise<ModuleResult<void>> {
   const startTime = Date.now();
   const timestamp = new Date().toISOString();
@@ -645,7 +645,7 @@ export async function markArtifactComplete(
       runId,
       'run_artifact',
       JSON.stringify(runArtifact, null, 2),
-      { contentType: 'application/json' }
+      { contentType: 'application/json' },
     );
 
     return {
@@ -692,7 +692,7 @@ export async function updateDeliveryStatus(
   channel: 'customer_relationship_management' | 'email' | 'motion',
   status: 'success' | 'failed',
   error?: string,
-  storage?: StorageAdapter
+  storage?: StorageAdapter,
 ): Promise<ModuleResult<void>> {
   const startTime = Date.now();
   const timestamp = new Date().toISOString();
@@ -712,7 +712,7 @@ export async function updateDeliveryStatus(
       runId,
       'run_artifact',
       JSON.stringify(runArtifact, null, 2),
-      { contentType: 'application/json' }
+      { contentType: 'application/json' },
     );
 
     return {

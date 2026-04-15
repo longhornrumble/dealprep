@@ -387,7 +387,7 @@ function getPromptsDir(): string {
  */
 export async function buildPrompt(
   context: SynthesisContext,
-  templatePath?: string
+  templatePath?: string,
 ): Promise<ModuleResult<string>> {
   const startTime = Date.now();
   const timestamp = new Date().toISOString();
@@ -447,7 +447,7 @@ export async function buildPrompt(
 
     // Compile template using simple string replacement
     // Template uses {{variable}} syntax
-    let compiled = template
+    const compiled = template
       .replace('{{run_metadata}}', JSON.stringify(runMetadata, null, 2))
       .replace('{{canonical_input}}', JSON.stringify(canonicalInput, null, 2))
       .replace('{{website_scrape}}', JSON.stringify(websiteScrape, null, 2))
@@ -497,7 +497,7 @@ export async function callClaude(
   config: ClaudeConfig,
   systemPrompt?: string,
   logger: Logger = defaultLogger,
-  metrics: Metrics = defaultMetrics
+  metrics: Metrics = defaultMetrics,
 ): Promise<ModuleResult<string>> {
   const startTime = Date.now();
   const timestamp = new Date().toISOString();
@@ -531,7 +531,7 @@ export async function callClaude(
   });
 
   // System prompt for JSON output
-  const defaultSystemPrompt = `You are an expert sales enablement analyst. You MUST output ONLY valid JSON that conforms exactly to the schema provided in the prompt. No markdown code fences, no explanatory text - just raw JSON.`;
+  const defaultSystemPrompt = 'You are an expert sales enablement analyst. You MUST output ONLY valid JSON that conforms exactly to the schema provided in the prompt. No markdown code fences, no explanatory text - just raw JSON.';
 
   const finalSystemPrompt = systemPrompt || defaultSystemPrompt;
 
@@ -647,7 +647,7 @@ export async function callClaude(
  */
 export function parseBriefResponse(
   response: string,
-  context: SynthesisContext
+  context: SynthesisContext,
 ): ModuleResult<DealPrepBrief> {
   const startTime = Date.now();
   const timestamp = new Date().toISOString();
@@ -695,7 +695,7 @@ export function parseBriefResponse(
 
     if (!validationResult.success) {
       const errors = validationResult.error.errors.map(
-        (e) => `${e.path.join('.')}: ${e.message}`
+        (e) => `${e.path.join('.')}: ${e.message}`,
       );
       return {
         success: false,
@@ -777,7 +777,7 @@ export function parseBriefResponse(
  */
 export function calculateConfidence(
   brief: DealPrepBrief,
-  context: SynthesisContext
+  context: SynthesisContext,
 ): 'high' | 'medium' | 'low' {
   let score = 0;
   const maxScore = 10;
@@ -785,9 +785,13 @@ export function calculateConfidence(
   // Website scrape quality
   if (context.websiteScrape) {
     const pageCount = context.websiteScrape.pages.length;
-    if (pageCount >= 10) score += 3;
-    else if (pageCount >= 5) score += 2;
-    else if (pageCount > 0) score += 1;
+    if (pageCount >= 10) {
+score += 3;
+} else if (pageCount >= 5) {
+score += 2;
+} else if (pageCount > 0) {
+score += 1;
+}
   }
 
   // Enrichment quality
@@ -798,15 +802,29 @@ export function calculateConfidence(
   }
 
   // Brief completeness
-  if (brief.meta.organization_name !== 'Not found') score += 1;
-  if (brief.organization_understanding.mission !== 'Not found') score += 1;
-  if (brief.leadership_and_staff.executive_leader.name !== 'Not found') score += 1;
-  if (brief.organization_understanding.programs.length > 0) score += 1;
-  if (brief.website_analysis.strengths.length > 0) score += 1;
+  if (brief.meta.organization_name !== 'Not found') {
+score += 1;
+}
+  if (brief.organization_understanding.mission !== 'Not found') {
+score += 1;
+}
+  if (brief.leadership_and_staff.executive_leader.name !== 'Not found') {
+score += 1;
+}
+  if (brief.organization_understanding.programs.length > 0) {
+score += 1;
+}
+  if (brief.website_analysis.strengths.length > 0) {
+score += 1;
+}
 
   const percentage = score / maxScore;
-  if (percentage >= 0.7) return 'high';
-  if (percentage >= 0.4) return 'medium';
+  if (percentage >= 0.7) {
+return 'high';
+}
+  if (percentage >= 0.4) {
+return 'medium';
+}
   return 'low';
 }
 
@@ -834,7 +852,7 @@ export async function synthesizeBrief(
   storage: StorageAdapter,
   config: ClaudeConfig,
   logger: Logger = defaultLogger,
-  metrics: Metrics = defaultMetrics
+  metrics: Metrics = defaultMetrics,
 ): Promise<ModuleResult<DealPrepBrief>> {
   const startTime = Date.now();
   const timestamp = new Date().toISOString();
